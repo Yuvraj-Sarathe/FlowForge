@@ -4,6 +4,12 @@ import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 import { addToSyncQueue, getSyncQueue, removeFromSyncQueue } from '../lib/idb';
 
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -14,6 +20,7 @@ export interface Task {
   dueDate?: string;
   syncId: string;
   createdAt: number;
+  subtasks?: Subtask[];
 }
 
 interface TaskContextType {

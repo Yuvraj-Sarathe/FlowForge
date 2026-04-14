@@ -4,11 +4,35 @@
 @theme {
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-app-bg: var(--app-bg);
+  --color-app-text: var(--app-text);
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-fg: var(--app-primary-fg);
+  --color-app-card: var(--app-card);
+  --color-app-border: var(--app-border);
+  --color-app-muted: var(--app-muted);
+  --color-app-surface: var(--app-surface);
+}
+
+:root {
+  --app-bg: #fafafa;
+  --app-text: #09090b;
+  --app-primary: #0d9488;
+  --app-primary-fg: #ffffff;
+  --app-card: #ffffff;
+  --app-border: #e4e4e7;
+  --app-muted: #71717a;
+  --app-surface: #f4f4f5;
+  --app-bg-image: none;
 }
 
 body {
-  background-color: #fafafa; /* zinc-50 */
-  color: #09090b; /* zinc-950 */
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  background-image: var(--app-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -24,12 +48,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e4e4e7; /* zinc-200 */
+  background: var(--app-border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4d4d8; /* zinc-300 */
+  background: var(--app-muted);
 }
 
 /* Tiptap Editor Styles */
@@ -37,7 +61,7 @@ body {
   outline: none;
 }
 .ProseMirror p.is-editor-empty:first-child::before {
-  color: #52525b; /* zinc-500 */
+  color: var(--app-muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;

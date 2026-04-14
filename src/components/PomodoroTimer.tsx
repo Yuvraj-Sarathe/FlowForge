@@ -38,16 +38,16 @@ export const PomodoroTimer: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto p-6">
-      <div className="flex gap-2 mb-12 p-1 bg-zinc-100 rounded-full border border-zinc-200">
+      <div className="flex gap-2 mb-12 p-1 bg-app-surface rounded-full border border-app-border">
         <button
           onClick={() => switchMode('focus')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${mode === 'focus' ? 'bg-white text-teal-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${mode === 'focus' ? 'bg-app-card text-app-primary shadow-sm' : 'text-app-muted hover:text-app-text'}`}
         >
           Focus
         </button>
         <button
           onClick={() => switchMode('break')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${mode === 'break' ? 'bg-white text-teal-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${mode === 'break' ? 'bg-app-card text-app-primary shadow-sm' : 'text-app-muted hover:text-app-text'}`}
         >
           Break
         </button>
@@ -59,14 +59,14 @@ export const PomodoroTimer: React.FC = () => {
             cx="128"
             cy="128"
             r="120"
-            className="stroke-zinc-100 fill-none"
+            className="stroke-app-surface fill-none"
             strokeWidth="4"
           />
           <motion.circle
             cx="128"
             cy="128"
             r="120"
-            className="stroke-teal-600 fill-none"
+            className="stroke-app-primary fill-none"
             strokeWidth="4"
             strokeLinecap="round"
             initial={{ pathLength: 1 }}
@@ -74,7 +74,7 @@ export const PomodoroTimer: React.FC = () => {
             transition={{ duration: 1, ease: "linear" }}
           />
         </svg>
-        <span className="text-6xl font-bold tracking-[-0.02em] text-zinc-950">
+        <span className="text-6xl font-bold tracking-[-0.02em] text-app-text">
           {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
         </span>
       </div>
@@ -84,7 +84,7 @@ export const PomodoroTimer: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={resetTimer}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-950 transition-colors shadow-sm"
+          className="w-12 h-12 flex items-center justify-center rounded-full bg-app-card border border-app-border text-app-muted hover:text-app-text transition-colors shadow-sm"
         >
           <ArrowCounterClockwise className="w-5 h-5" />
         </motion.button>
@@ -92,7 +92,7 @@ export const PomodoroTimer: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={toggleTimer}
-          className="w-16 h-16 flex items-center justify-center rounded-full bg-teal-600 text-white shadow-[0_8px_20px_rgba(13,148,136,0.3)]"
+          className="w-16 h-16 flex items-center justify-center rounded-full bg-app-primary text-app-primary-fg shadow-[0_8px_20px_rgba(13,148,136,0.3)]"
         >
           {isActive ? <Pause weight="fill" className="w-8 h-8" /> : <Play weight="fill" className="w-8 h-8 ml-1" />}
         </motion.button>
