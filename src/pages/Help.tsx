@@ -78,7 +78,7 @@ export const Help: React.FC = () => {
           className="text-4xl md:text-5xl font-bold tracking-tight text-app-text mb-3 flex items-center gap-3"
         >
           <Question className="w-10 h-10 text-app-primary" weight="duotone" />
-          How to Use FlowForge
+          FlowForge Help Center
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }} 
@@ -86,121 +86,147 @@ export const Help: React.FC = () => {
           transition={{ delay: 0.1 }} 
           className="text-lg text-app-muted"
         >
-          Everything you need to know to get started
+          Your guide to mastering productivity with FlowForge
         </motion.p>
       </header>
 
-      <Section icon={Lightning} title="Getting Started">
-        <p className="mb-4">FlowForge helps you manage your daily tasks and routines. Here's what you can do:</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <FeatureCard icon={ListChecks} title="Create Tasks" description="One-time or recurring with due dates and times" />
-          <FeatureCard icon={Repeat} title="Create Routines" description="Daily habits that repeat at the same time" />
-          <FeatureCard icon={Tag} title="Stay Organized" description="Use tags, priorities, and different views" />
+      {/* Table of Contents */}
+      <Section icon={ListChecks} title="Table of Contents">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Getting Started</h4>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• <a href="#overview" className="hover:text-app-primary">Overview</a></li>
+              <li>• <a href="#quick-start" className="hover:text-app-primary">Quick Start</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Features</h4>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• <a href="#tasks" className="hover:text-app-primary">Tasks</a></li>
+              <li>• <a href="#routines" className="hover:text-app-primary">Routines</a></li>
+              <li>• <a href="#views" className="hover:text-app-primary">Views</a></li>
+              <li>• <a href="#timer" className="hover:text-app-primary">Focus Timer</a></li>
+              <li>• <a href="#organization" className="hover:text-app-primary">Organization</a></li>
+              <li>• <a href="#sync" className="hover:text-app-primary">Sync & Backup</a></li>
+              <li>• <a href="#settings" className="hover:text-app-primary">Settings</a></li>
+            </ul>
+          </div>
         </div>
       </Section>
 
-      <Section icon={Plus} title="Creating Tasks">
+      <Section icon={Lightning} title="Overview" id="overview">
+        <p className="mb-4">FlowForge is your personal productivity companion designed to help you manage tasks, build habits, and stay focused. Whether you're planning your day or tracking long-term goals, FlowForge adapts to your workflow.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FeatureCard icon={ListChecks} title="Task Management" description="Create, organize, and track tasks with due dates, priorities, and subtasks" />
+          <FeatureCard icon={Repeat} title="Habit Building" description="Establish daily routines and habits with smart scheduling" />
+          <FeatureCard icon={Calendar} title="Multiple Views" description="See your tasks in calendar, kanban, or list format" />
+          <FeatureCard icon={Timer} title="Focus Sessions" description="Use the Pomodoro timer to maintain concentration" />
+        </div>
+      </Section>
+
+      <Section icon={Play} title="Quick Start" id="quick-start">
+        <p className="mb-4">Get up and running in minutes:</p>
+        <div className="space-y-3">
+          <QuickStep number="1" title="Sign in or link your device" />
+          <QuickStep number="2" title="Create your first task or routine" />
+          <QuickStep number="3" title="Explore different views (Calendar, Kanban)" />
+          <QuickStep number="4" title="Set up notifications and work schedule" />
+        </div>
+        <p className="mt-4 text-sm text-app-muted">Pro tip: Start with 3-5 tasks to avoid overwhelm. You can always add more later!</p>
+      </Section>
+
+      <Section icon={Plus} title="Tasks" id="tasks">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="font-semibold text-app-text mb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded bg-orange-500/20 text-orange-500 flex items-center justify-center text-xs font-bold">?</span>
-              What are Tasks?
-            </h3>
-            <p className="text-sm text-app-muted mb-4">Things you need to do once or on specific days.</p>
+            <h3 className="font-semibold text-app-text mb-2">What are Tasks?</h3>
+            <p className="text-sm text-app-muted mb-4">Tasks are one-time or recurring items you need to complete. They can have due dates, priorities, and more.</p>
             
-            <h3 className="font-semibold text-app-text mb-3">How to Create:</h3>
+            <h3 className="font-semibold text-app-text mb-3">Creating Tasks</h3>
             <div className="space-y-2">
-              <QuickStep number="1" title='Click "New Task" on Dashboard' />
-              <QuickStep number="2" title="Enter a title (required)" />
-              <QuickStep number="3" title="Add a description (optional)" />
-              <QuickStep number="4" title="Pick a due date & time" />
-              <QuickStep number="5" title="Set priority (Low/Medium/High)" />
-              <QuickStep number="6" title="Click Create Task" />
+              <QuickStep number="1" title="Click 'New Task' or use Quick Add" />
+              <QuickStep number="2" title="Enter title and description" />
+              <QuickStep number="3" title="Set due date, time, and priority" />
+              <QuickStep number="4" title="Add tags and subtasks if needed" />
+              <QuickStep number="5" title="Save your task" />
             </div>
           </div>
           <div className="space-y-4">
             <div className="bg-app-surface/50 rounded-xl p-4">
-              <h4 className="font-semibold text-app-text mb-2">Recurring Options</h4>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1.5 bg-app-primary/10 text-app-primary rounded-lg text-xs font-medium">Weekly</span>
-                <span className="px-3 py-1.5 bg-app-primary/10 text-app-primary rounded-lg text-xs font-medium">Monthly</span>
-                <span className="px-3 py-1.5 bg-app-primary/10 text-app-primary rounded-lg text-xs font-medium">Custom Days</span>
+              <h4 className="font-semibold text-app-text mb-2">Task Features</h4>
+              <div className="space-y-2 text-sm text-app-muted">
+                <p>• <strong>Subtasks</strong> - Break down complex tasks</p>
+                <p>• <strong>Attachments</strong> - Upload files and images</p>
+                <p>• <strong>Dependencies</strong> - Link tasks together</p>
+                <p>• <strong>Recurring</strong> - Set up repeating tasks</p>
+                <p>• <strong>Priority levels</strong> - High, Medium, Low</p>
               </div>
             </div>
             <div className="bg-app-surface/50 rounded-xl p-4">
-              <h4 className="font-semibold text-app-text mb-2">Other Features</h4>
+              <h4 className="font-semibold text-app-text mb-2">Quick Actions</h4>
               <div className="space-y-2 text-sm text-app-muted">
-                <p>• <strong>Subtasks</strong> - break big tasks into steps</p>
-                <p>• <strong>Attachments</strong> - upload related files</p>
-                <p>• <strong>Dependencies</strong> - link tasks together</p>
+                <p>• Click checkbox to mark complete</p>
+                <p>• Drag to reorder in lists</p>
+                <p>• Use keyboard shortcuts (Ctrl+Enter to save)</p>
               </div>
             </div>
           </div>
         </div>
       </Section>
 
-      <Section icon={Clock} title="Creating Routines">
+      <Section icon={Clock} title="Routines" id="routines">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="font-semibold text-app-text mb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded bg-purple-500/20 text-purple-500 flex items-center justify-center text-xs font-bold">?</span>
-              What are Routines?
-            </h3>
-            <p className="text-sm text-app-muted mb-4">Daily habits that happen at the same time every day.</p>
+            <h3 className="font-semibold text-app-text mb-2">What are Routines?</h3>
+            <p className="text-sm text-app-muted mb-4">Routines are daily habits that repeat at specific times. Perfect for building consistent habits.</p>
             
-            <h3 className="font-semibold text-app-text mb-3">How to Create:</h3>
+            <h3 className="font-semibold text-app-text mb-3">Creating Routines</h3>
             <div className="space-y-2">
-              <QuickStep number="1" title='Click "New Routine"' />
-              <QuickStep number="2" title="Enter a title" />
-              <QuickStep number="3" title="Pick a time" />
-              <QuickStep number="4" title="Choose repeat days" />
-              <QuickStep number="5" title="Click Create" />
+              <QuickStep number="1" title="Click 'New Routine'" />
+              <QuickStep number="2" title="Enter name and description" />
+              <QuickStep number="3" title="Set time and repeat schedule" />
+              <QuickStep number="4" title="Choose days of the week" />
+              <QuickStep number="5" title="Save your routine" />
             </div>
           </div>
           <div className="space-y-4">
             <div className="bg-app-surface/50 rounded-xl p-4">
               <h4 className="font-semibold text-app-text mb-2">Repeat Options</h4>
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">All Days</span>
-                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">Working Days</span>
+                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">Every Day</span>
+                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">Weekdays</span>
                 <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">Weekends</span>
+                <span className="px-3 py-1.5 bg-purple-500/10 text-purple-500 rounded-lg text-xs font-medium">Custom Days</span>
               </div>
             </div>
             <div className="bg-app-surface/50 rounded-xl p-4">
-              <h4 className="font-semibold text-app-text mb-2">Routines vs Tasks</h4>
+              <h4 className="font-semibold text-app-text mb-2">Tips for Success</h4>
               <div className="space-y-2 text-sm text-app-muted">
-                <p><strong>Routines</strong> → No due date, repeat daily</p>
-                <p><strong>Tasks</strong> → Have due dates, one-time</p>
+                <p>• Start with 2-3 routines</p>
+                <p>• Set realistic times</p>
+                <p>• Use notifications to stay on track</p>
+                <p>• Review and adjust weekly</p>
               </div>
             </div>
           </div>
         </div>
       </Section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <Section icon={CalendarBlank} title="Calendar View">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">What you'll see</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• All tasks with due dates</li>
-                <li>• Daily routines (with 🔄 icon)</li>
-                <li>• Color coding: purple = routines, red = high priority</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">How to use</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• Switch Month / Week / Day views</li>
-                <li>• Click dates to see tasks</li>
-                <li>• Click tasks to view/edit</li>
-              </ul>
-            </div>
+      <Section icon={SquaresFour} title="Views" id="views">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Calendar View</h4>
+            <p className="text-sm text-app-muted mb-2">See all your tasks and routines in a calendar format.</p>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• Switch between Month, Week, Day</li>
+              <li>• Color-coded: Purple = routines, Red = high priority</li>
+              <li>• Click dates to see details</li>
+              <li>• Drag tasks to reschedule</li>
+            </ul>
           </div>
-        </Section>
-
-        <Section icon={SquaresFour} title="Kanban Board">
-          <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Kanban Board</h4>
+            <p className="text-sm text-app-muted mb-2">Visualize your workflow with columns.</p>
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 bg-app-surface/50 rounded-lg p-2 text-center">
                 <span className="text-xs font-medium text-app-muted">To Do</span>
@@ -212,19 +238,16 @@ export const Help: React.FC = () => {
                 <span className="text-xs font-medium text-green-500">Done</span>
               </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">How to use</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• Drag tasks between columns</li>
-                <li>• Click checkmark to mark done</li>
-                <li>• See all work at a glance</li>
-              </ul>
-            </div>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• Drag tasks between columns</li>
+              <li>• See progress at a glance</li>
+              <li>• Great for project management</li>
+            </ul>
           </div>
-        </Section>
-      </div>
+        </div>
+      </Section>
 
-      <Section icon={Timer} title="Focus Timer">
+      <Section icon={Timer} title="Focus Timer" id="timer">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-semibold text-app-text mb-3">Pomodoro Technique</h4>
@@ -247,146 +270,117 @@ export const Help: React.FC = () => {
             </div>
           </div>
           <div>
-            <h4 className="font-semibold text-app-text mb-2">How to use</h4>
+            <h4 className="font-semibold text-app-text mb-2">How to Use</h4>
             <div className="space-y-2">
-              <QuickStep number="1" title="Go to Focus page" />
-              <QuickStep number="2" title="Click Start" />
-              <QuickStep number="3" title="Work until timer rings" />
-              <QuickStep number="4" title="Take your break" />
+              <QuickStep number="1" title="Go to Timer page" />
+              <QuickStep number="2" title="Choose session type" />
+              <QuickStep number="3" title="Click Start to begin" />
+              <QuickStep number="4" title="Take breaks as scheduled" />
             </div>
+            <p className="mt-4 text-sm text-app-muted">Customize timer durations in Settings.</p>
           </div>
         </div>
       </Section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <Section icon={Bell} title="Notifications">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">Enable</h4>
-              <ol className="text-sm text-app-muted space-y-1 ml-4 list-decimal">
-                <li>Settings → Notifications</li>
-                <li>Toggle Enable Notifications</li>
-                <li>Allow in browser popup</li>
-              </ol>
-            </div>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">You'll get notified</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• 15 min before task due</li>
-                <li>• When routine time arrives</li>
-                <li>• Only if notifications enabled</li>
-              </ul>
-            </div>
-          </div>
-        </Section>
-
-        <Section icon={Gear} title="Work Schedule">
-          <div className="space-y-4">
-            <p className="text-sm text-app-muted">Tell FlowForge which days you work so routines match your schedule.</p>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">Set up</h4>
-              <ol className="text-sm text-app-muted space-y-1 ml-4 list-decimal">
-                <li>Settings → Work Schedule</li>
-                <li>Toggle Saturday as work day</li>
-                <li>Click dates for holidays</li>
-              </ol>
-            </div>
-          </div>
-        </Section>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <Section icon={Tag} title="Tags & Filters">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">Tags</h4>
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded text-xs">#work</span>
-                <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs">#personal</span>
-                <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs">#urgent</span>
-              </div>
-              <p className="text-sm text-app-muted">Add tags when creating tasks. Filter by them on Dashboard.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">Other Filters</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• Search keywords</li>
-                <li>• Sort by date/priority</li>
-                <li>• Bulk select tasks</li>
-              </ul>
-            </div>
-          </div>
-        </Section>
-
-        <Section icon={Devices} title="Sync">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-app-text mb-2 flex items-center gap-2">
-                <GoogleLogo className="w-4 h-4" />
-                Google Sync
-              </h4>
-              <ol className="text-sm text-app-muted space-y-1 ml-4 list-decimal">
-                <li>Sign in with Google</li>
-                <li>Auto-syncs across devices</li>
-                <li>Works offline too</li>
-              </ol>
-            </div>
-            <div>
-              <h4 className="font-semibold text-app-text mb-2">Calendar Sync</h4>
-              <ul className="text-sm text-app-muted space-y-1">
-                <li>• Click "Sync Calendar"</li>
-                <li>• Import Google Calendar</li>
-                <li>• Two-way sync</li>
-              </ul>
-            </div>
-          </div>
-        </Section>
-      </div>
-
-      <Section icon={PaintBrush} title="Customization">
+      <Section icon={Tag} title="Organization" id="organization">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center gap-4 bg-app-surface/50 rounded-xl p-4">
-            <div className="flex gap-2">
-              <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                <Palette className="w-5 h-5 text-gray-400" />
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
-                <Palette className="w-5 h-5 text-white" />
-              </div>
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Tags</h4>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <span className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded text-xs">#work</span>
+              <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs">#personal</span>
+              <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs">#urgent</span>
             </div>
-            <div>
-              <h4 className="font-semibold text-app-text text-sm">Theme</h4>
-              <p className="text-xs text-app-muted">Settings → Appearance</p>
-              <p className="text-xs text-app-muted">Light / Dark / System</p>
-            </div>
+            <p className="text-sm text-app-muted">Add tags when creating tasks. Filter and search by tags.</p>
           </div>
-          <div className="flex items-center gap-4 bg-app-surface/50 rounded-xl p-4">
-            <Download className="w-10 h-10 text-app-primary" weight="duotone" />
-            <div>
-              <h4 className="font-semibold text-app-text text-sm">Export Data</h4>
-              <p className="text-xs text-app-muted">Settings → Export/Import</p>
-              <p className="text-xs text-app-muted">JSON / CSV / Markdown</p>
-            </div>
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Filters & Search</h4>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• Search by keywords</li>
+              <li>• Filter by priority, status, tags</li>
+              <li>• Sort by date, priority, or name</li>
+              <li>• Bulk select and edit tasks</li>
+            </ul>
           </div>
         </div>
       </Section>
 
-      <Section icon={ArrowsClockwise} title="Quick Tips">
+      <Section icon={Devices} title="Sync & Backup" id="sync">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-semibold text-app-text mb-2 flex items-center gap-2">
+              <GoogleLogo className="w-4 h-4" />
+              Google Sync
+            </h4>
+            <p className="text-sm text-app-muted mb-2">Keep your data synced across devices.</p>
+            <ol className="text-sm text-app-muted space-y-1 ml-4 list-decimal">
+              <li>Sign in with Google</li>
+              <li>Auto-syncs in real-time</li>
+              <li>Works offline</li>
+            </ol>
+          </div>
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Device Linking</h4>
+            <p className="text-sm text-app-muted mb-2">Connect multiple devices seamlessly.</p>
+            <ol className="text-sm text-app-muted space-y-1 ml-4 list-decimal">
+              <li>Go to Link Device page</li>
+              <li>Scan QR code or enter code</li>
+              <li>Instant sync across devices</li>
+            </ol>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h4 className="font-semibold text-app-text mb-2">Export & Import</h4>
+          <p className="text-sm text-app-muted">Backup your data or migrate to another service.</p>
+          <ul className="text-sm text-app-muted space-y-1 ml-4">
+            <li>• Export to JSON, CSV, or Markdown</li>
+            <li>• Import from other task managers</li>
+            <li>• Available in Settings</li>
+          </ul>
+        </div>
+      </Section>
+
+      <Section icon={Gear} title="Settings" id="settings">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Notifications</h4>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• Enable browser notifications</li>
+              <li>• Get reminded 15 min before due</li>
+              <li>• Routine time alerts</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-app-text mb-2">Work Schedule</h4>
+            <ul className="text-sm text-app-muted space-y-1">
+              <li>• Set your working days</li>
+              <li>• Mark holidays</li>
+              <li>• Affects routine scheduling</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h4 className="font-semibold text-app-text mb-2">Appearance</h4>
+          <p className="text-sm text-app-muted">Choose light, dark, or system theme.</p>
+        </div>
+      </Section>
+
+      <Section icon={CheckCircle} title="Tips & Tricks">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <QuickTip>Start simple with a few tasks</QuickTip>
-          <QuickTip>Use priorities for important tasks</QuickTip>
-          <QuickTip>Review your calendar daily</QuickTip>
-          <QuickTip>Click checkbox to mark done</QuickTip>
-          <QuickTip>Try Focus mode to concentrate</QuickTip>
-          <QuickTip>Enable notifications to stay on track</QuickTip>
-          <QuickTip>Organize with tags</QuickTip>
-          <QuickTip>Create routines for habits</QuickTip>
+          <QuickTip>Use the Quick Add button for fast task creation</QuickTip>
+          <QuickTip>Set priorities to focus on what matters most</QuickTip>
+          <QuickTip>Review your calendar every morning</QuickTip>
+          <QuickTip>Click checkbox to mark complete</QuickTip>
+          <QuickTip>Use the Pomodoro timer to maintain focus</QuickTip>
+          <QuickTip>Enable notifications but don't overdo it</QuickTip>
+          <QuickTip>Start routines small and build up</QuickTip>
+          <QuickTip>Export data regularly for backup</QuickTip>
         </div>
       </Section>
 
       <footer className="mt-8 pt-6 border-t border-app-border/30 text-center">
-        <p className="text-sm text-app-muted mb-2">Need more help?</p>
-        <p className="text-xs text-app-muted/60">FlowForge is designed to be simple. Just start using it!</p>
+        <p className="text-sm text-app-muted mb-2">Still need help?</p>
+        <p className="text-xs text-app-muted/60">FlowForge is designed to be intuitive. Explore and experiment!</p>
       </footer>
     </div>
   );
