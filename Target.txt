@@ -1,4 +1,4 @@
-Trying to create the best todo app possible on free resources and this is the current progress.
+Trying to create the best todo app possible on free resources.
 
 My goals:
 
