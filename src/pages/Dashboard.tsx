@@ -8,8 +8,9 @@ import { QuickAdd } from '../components/QuickAdd';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { InfoCard } from '../components/InfoCard';
 import { CreateTaskModal } from '../components/CreateTaskModal';
+import { CreateRoutineModal } from '../components/CreateRoutineModal';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { CheckCircle, Circle, CalendarBlank, Tag, MagnifyingGlass, SortAscending, Funnel, CalendarPlus, List, Clock, DownloadSimple, Square, CheckSquare, Plus } from '@phosphor-icons/react';
+import { CheckCircle, Circle, CalendarBlank, Tag, MagnifyingGlass, SortAscending, Funnel, CalendarPlus, List, Clock, Square, CheckSquare, Plus } from '@phosphor-icons/react';
 import { format, isSameDay } from 'date-fns';
 
 const TAG_COLORS = [
@@ -136,11 +137,10 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 export const Dashboard: React.FC = () => {
-  const { tasks, updateTask, deleteTask, isOnline, hasMore, loadMore, isLoadingMore } = useTasks();
+  const { tasks, updateTask, deleteTask, isOnline, hasMore, loadMore, isLoadingMore, addTask } = useTasks();
   const { googleAccessToken, signIn } = useAuth();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
@@ -149,6 +149,7 @@ export const Dashboard: React.FC = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showRoutineModal, setShowRoutineModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const allTags = useMemo(() => { const tags = new Set<string>(); tasks.forEach(t => t.tags?.forEach(tag => tags.add(tag))); return Array.from(tags); }, [tasks]);
@@ -188,26 +189,68 @@ export const Dashboard: React.FC = () => {
     if (!token) { token = await signIn(); if (!token) return; }
     setIsSyncing(true);
     try {
-      const tasksToSync = tasks.filter(t => t.dueDate && !t.calendarEventId && t.status !== 'done');
-      let successCount = 0;
-      for (const task of tasksToSync) {
-        const event = { summary: task.title, description: task.description || '', start: { dateTime: new Date(task.dueDate!).toISOString() }, end: { dateTime: new Date(new Date(task.dueDate!).getTime() + 60 * 60 * 1000).toISOString() } };
-        const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(event) });
-        if (response.ok) { const data = await response.json(); await updateTask(task.id, { calendarEventId: data.id }); successCount++; }
+      // Step 1: Import events from Google Calendar
+      const now = new Date();
+      const timeMin = now.toISOString();
+      const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      
+      const fetchResponse = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      
+      let importCount = 0;
+      if (fetchResponse.ok) {
+        const data = await fetchResponse.json();
+        for (const event of data.items || []) {
+          if (event.summary && event.start?.dateTime) {
+            const existingTask = tasks.find(t => t.calendarEventId === event.id);
+            if (!existingTask) {
+              await addTask({
+                title: event.summary,
+                description: event.description || undefined,
+                dueDate: event.start.dateTime,
+                status: 'todo',
+                priority: 'medium',
+                calendarEventId: event.id,
+              });
+              importCount++;
+            }
+          }
+        }
       }
-      alert(`Synced ${successCount} task(s) to Google Calendar!`);
-    } catch (error) { console.error("Calendar sync error:", error); alert("Failed to sync with Google Calendar."); }
+
+      // Step 2: Export tasks to Google Calendar
+      const tasksToSync = tasks.filter(t => t.dueDate && !t.calendarEventId && t.status !== 'done');
+      let exportCount = 0;
+      for (const task of tasksToSync) {
+        const event = { 
+          summary: task.title, 
+          description: task.description || '', 
+          start: { dateTime: new Date(task.dueDate!).toISOString() }, 
+          end: { dateTime: new Date(new Date(task.dueDate!).getTime() + 60 * 60 * 1000).toISOString() } 
+        };
+        const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', { 
+          method: 'POST', 
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, 
+          body: JSON.stringify(event) 
+        });
+        if (response.ok) { 
+          const data = await response.json(); 
+          await updateTask(task.id, { calendarEventId: data.id }); 
+          exportCount++; 
+        }
+      }
+      
+      alert(`Synced! Imported ${importCount} event(s) from calendar, exported ${exportCount} task(s) to calendar.`);
+    } catch (error) { 
+      console.error("Calendar sync error:", error); 
+      alert("Failed to sync with Google Calendar."); 
+    }
     finally { setIsSyncing(false); }
   };
 
-  const handleImport = async (source: 'calendar' | 'tasks') => {
-    let token = googleAccessToken;
-    if (!token) { token = await signIn(); if (!token) return; }
-    setIsImporting(true);
-    try { alert('Import functionality - connect to Google API to complete'); }
-    catch (error) { console.error("Import error:", error); }
-    finally { setIsImporting(false); }
-  };
+
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-[100dvh]">
@@ -244,17 +287,17 @@ export const Dashboard: React.FC = () => {
               <Plus className="w-5 h-5" />
               New Task
             </motion.button>
-            <div className="relative group">
-              <motion.button disabled={isImporting} className="flex items-center gap-2 px-4 py-2 bg-app-card border border-app-border/50 rounded-xl text-sm font-medium hover:bg-app-surface transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <DownloadSimple className="w-4 h-4" />{isImporting ? 'Importing...' : 'Import'}
-              </motion.button>
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 0, y: -10 }} className="absolute right-0 top-full mt-2 w-40 bg-app-card border border-app-border rounded-xl shadow-xl invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-                <button onClick={() => handleImport('calendar')} className="w-full text-left px-4 py-3 text-sm hover:bg-app-surface transition-colors border-b border-app-border/30">From Calendar</button>
-                <button onClick={() => handleImport('tasks')} className="w-full text-left px-4 py-3 text-sm hover:bg-app-surface transition-colors">From Tasks</button>
-              </motion.div>
-            </div>
+            <motion.button
+              onClick={() => setShowRoutineModal(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-app-card border border-app-border rounded-xl font-medium hover:bg-app-surface"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Clock className="w-5 h-5" />
+              New Routine
+            </motion.button>
             <motion.button onClick={handleCalendarSync} disabled={isSyncing} className="flex items-center gap-2 px-4 py-2 bg-app-card border border-app-border/50 rounded-xl text-sm font-medium hover:bg-app-surface transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <CalendarPlus className="w-4 h-4" />{isSyncing ? 'Syncing...' : 'Sync'}
+              <CalendarPlus className="w-4 h-4" />{isSyncing ? 'Syncing...' : 'Sync Calendar'}
             </motion.button>
           </div>
         </div>
@@ -349,6 +392,9 @@ export const Dashboard: React.FC = () => {
       
       {/* Create Task Modal */}
       <CreateTaskModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      
+      {/* Create Routine Modal */}
+      <CreateRoutineModal isOpen={showRoutineModal} onClose={() => setShowRoutineModal(false)} />
     </div>
   );
 };

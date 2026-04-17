@@ -7,6 +7,7 @@ import { Webhook as WebhookType, validateWebhookUrl } from '../lib/webhooks';
 import { exportTasksAsJSON, exportTasksAsCSV, exportTasksAsMarkdown, downloadFile, readFileAsText } from '../lib/exportImport';
 import { getSlackWebhooksList, addSlackWebhook, removeSlackWebhook, toggleSlackWebhook } from '../lib/slackApi';
 import { WorkScheduleSettings } from '../components/WorkScheduleSettings';
+import { NotificationSettings } from '../components/NotificationSettings';
 import toast from 'react-hot-toast';
 
 function BentoCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -153,6 +154,10 @@ export const Settings: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
+          <BentoCard>
+            <NotificationSettings />
+          </BentoCard>
+
           <BentoCard>
             <WorkScheduleSettings />
           </BentoCard>

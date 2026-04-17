@@ -3,236 +3,290 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  House, Timer, Link, Gear, Plus, CalendarBlank, CheckCircle, Heart, SquaresFour,
-  Tag, Funnel, Square, Clock, ArrowCounterClockwise, MagnifyingGlass,
-  Keyboard, LinkBreak, CloudArrowDown, CloudArrowUp, Devices, Bell,
-  PaintBrush, Image as ImageIcon, Trash, Check, X, Question, Info,
-  Lightning, Cloud, CalendarCheck, ListChecks, ArrowsClockwise
+  Question, Plus, Clock, CalendarBlank, CheckCircle, Bell, Repeat, Tag, 
+  SquaresFour, Gear, PaintBrush, Devices, Lightning, ArrowsClockwise
 } from '@phosphor-icons/react';
 
-function FeatureCard({ icon: Icon, title, description, delay }: { icon: React.ComponentType<{ className?: string; weight?: string }>; title: string; description: string; delay: number }) {
+function Section({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string; weight?: string }>; title: string; children: React.ReactNode }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, type: 'spring', stiffness: 100, damping: 20 }} className="p-5 bg-app-surface/50 rounded-xl hover:bg-app-surface transition-colors">
-      <Icon className="w-6 h-6 text-app-primary mb-3" weight="duotone" />
-      <h3 className="text-sm font-semibold text-app-text mb-1">{title}</h3>
-      <p className="text-xs text-app-muted leading-relaxed">{description}</p>
-    </motion.div>
-  );
-}
-
-function ScreenCard({ title, icon: Icon, description, features, accent = 'text-app-primary' }: { title: string; icon: React.ComponentType<{ className?: string; weight?: string }>; description: string; features: { name: string; desc: string }[]; accent?: string }) {
-  return (
-    <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-app-card border border-app-border/30 rounded-2xl p-6">
-      <div className="flex items-start gap-4 mb-5">
-        <div className="w-12 h-12 rounded-xl bg-app-primary/10 flex items-center justify-center text-app-primary shrink-0">
-          <Icon className="w-6 h-6" weight="duotone" />
+    <motion.section 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      className="bg-app-card border border-app-border/30 rounded-2xl p-6 mb-6"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-app-primary/10 flex items-center justify-center">
+          <Icon className="w-5 h-5 text-app-primary" weight="duotone" />
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-app-text">{title}</h2>
-          <p className="text-sm text-app-muted mt-1">{description}</p>
-        </div>
+        <h2 className="text-xl font-bold text-app-text">{title}</h2>
       </div>
-      <div className="grid sm:grid-cols-2 gap-3">
-        {features.map((f) => (
-          <div key={f.name} className="flex items-start gap-3 py-2 px-3 bg-app-surface/50 rounded-lg">
-            <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-0.5" weight="fill" />
-            <div>
-              <h4 className="text-xs font-medium text-app-text">{f.name}</h4>
-              <p className="text-[11px] text-app-muted">{f.desc}</p>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-3 text-sm text-app-text leading-relaxed">
+        {children}
       </div>
     </motion.section>
   );
 }
 
-function ShortcutCard({ shortcuts }: { shortcuts: { key: string; action: string }[] }) {
+function Step({ number, title, description }: { number: string; title: string; description: string }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-app-card border border-app-border/30 rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-12 h-12 rounded-xl bg-app-primary/10 flex items-center justify-center text-app-primary">
-          <Keyboard className="w-6 h-6" weight="duotone" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-app-text">Keyboard Shortcuts</h2>
-          <p className="text-sm text-app-muted">Navigate faster with keyboard shortcuts</p>
-        </div>
+    <div className="flex items-start gap-3 p-3 bg-app-surface/50 rounded-xl">
+      <span className="w-6 h-6 rounded-full bg-app-primary text-app-primary-fg text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+        {number}
+      </span>
+      <div>
+        <h4 className="font-semibold text-app-text mb-1">{title}</h4>
+        <p className="text-xs text-app-muted">{description}</p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {shortcuts.map((s) => (
-          <div key={s.key} className="flex items-center gap-2 py-2 px-3 bg-app-surface/50 rounded-lg">
-            <kbd className="px-2 py-1 bg-app-bg border border-app-border/50 rounded text-xs font-mono text-app-text min-w-[28px] text-center">{s.key}</kbd>
-            <span className="text-xs text-app-muted truncate">{s.action}</span>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function QuickStartCard() {
-  const steps = [
-    { num: '1', title: 'Quick Add Tasks', desc: 'Type "Buy milk tomorrow 5pm" - natural language parsing handles dates & times' },
-    { num: '2', title: 'Organize with Tags', desc: 'Add tags like #work, #personal to categorize and filter tasks easily' },
-    { num: '3', title: 'Set Priorities', desc: 'Mark high priority tasks with ! for things that need immediate attention' },
-    { num: '4', title: 'Use Focus Timer', desc: 'Try the Pomodoro timer for focused work sessions - 25min work, 5min break' },
-  ];
-  
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-br from-app-primary/10 to-emerald-500/5 border border-app-primary/20 rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-5">
-        <Lightning className="w-6 h-6 text-app-primary" weight="duotone" />
-        <h2 className="text-xl font-bold text-app-text">Quick Start Guide</h2>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-4">
-        {steps.map((step) => (
-          <div key={step.num} className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-app-primary text-app-primary-fg text-xs font-bold flex items-center justify-center shrink-0">{step.num}</span>
-            <div>
-              <h4 className="text-sm font-semibold text-app-text">{step.title}</h4>
-              <p className="text-xs text-app-muted">{step.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
 export const Help: React.FC = () => {
   return (
-    <div className="p-6 md:p-10 max-w-5xl mx-auto min-h-[100dvh]">
+    <div className="p-6 md:p-10 max-w-4xl mx-auto min-h-[100dvh]">
       <header className="mb-8">
-        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl font-bold tracking-tight text-app-text leading-[0.9] mb-3 flex items-center gap-3">
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="text-4xl md:text-5xl font-bold tracking-tight text-app-text mb-3 flex items-center gap-3"
+        >
           <Question className="w-10 h-10 text-app-primary" weight="duotone" />
-          Help & Guide
+          How to Use FlowForge
         </motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-lg text-app-muted">Learn how to use all features of FlowForge</motion.p>
+        <motion.p 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          transition={{ delay: 0.1 }} 
+          className="text-lg text-app-muted"
+        >
+          Everything you need to know to get started
+        </motion.p>
       </header>
 
-      <QuickStartCard />
+      <Section icon={Lightning} title="Getting Started">
+        <p>FlowForge helps you manage your daily tasks and routines. Here's what you can do:</p>
+        <div className="space-y-2 mt-3">
+          <Step 
+            number="1" 
+            title="Create Tasks" 
+            description="One-time or recurring tasks with due dates and times"
+          />
+          <Step 
+            number="2" 
+            title="Create Routines" 
+            description="Daily habits that repeat at the same time every day"
+          />
+          <Step 
+            number="3" 
+            title="Stay Organized" 
+            description="Use tags, priorities, and different views to manage everything"
+          />
+        </div>
+      </Section>
 
-      <div className="mt-10 space-y-6">
-        <ScreenCard
-          icon={House}
-          title="Tasks (Dashboard)"
-          description="Your main task management hub - view, search, filter, and manage all tasks in one place"
-          features={[
-            { name: 'Quick Add', desc: 'Add tasks with natural language like "Call mom tomorrow at 3pm"' },
-            { name: 'Search & Filter', desc: 'Find tasks by keyword, filter by tags or priority' },
-            { name: 'Sort Options', desc: 'Sort by created date, due date, or priority level' },
-            { name: 'Bulk Actions', desc: 'Select multiple tasks to complete or delete at once' },
-            { name: 'Timeline View', desc: 'See tasks scheduled for today in timeline format' },
-          ]}
-        />
+      <Section icon={Plus} title="Creating Tasks">
+        <p><strong>What are Tasks?</strong></p>
+        <p>Tasks are things you need to do once or on specific days. Examples: "Buy groceries", "Submit report by Friday", "Call dentist".</p>
         
-        <ScreenCard
-          icon={Timer}
-          title="Focus (Pomodoro Timer)"
-          description="Focus timer with customizable work and break sessions"
-          features={[
-            { name: 'Focus Sessions', desc: '25-minute work sessions (configurable in settings)' },
-            { name: 'Short Breaks', desc: '5-minute breaks between sessions' },
-            { name: 'Long Breaks', desc: '15-minute break after 4 completed sessions' },
-            { name: 'Audio Alerts', desc: 'Sound notifications when session ends' },
-            { name: 'Persistence', desc: 'Timer state saved - continues after refresh' },
-          ]}
-        />
+        <p className="mt-3"><strong>How to Create a Task:</strong></p>
+        <ol className="list-decimal list-inside space-y-1 ml-2">
+          <li>Click the <strong>"New Task"</strong> button on the Dashboard</li>
+          <li>Enter a title (required) - what you need to do</li>
+          <li>Add a description (optional) - extra details</li>
+          <li>Pick a due date and time (optional)</li>
+          <li>Set priority: Low, Medium, or High</li>
+          <li>Add tags to organize (like #work, #personal)</li>
+          <li>Enable notifications if you want reminders</li>
+          <li>Click "Create Task"</li>
+        </ol>
+
+        <p className="mt-3"><strong>Recurring Tasks:</strong></p>
+        <p>Check "Recurring Task" if it repeats. Choose:</p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li><strong>Weekly</strong> - repeats every week</li>
+          <li><strong>Monthly</strong> - repeats every month</li>
+          <li><strong>Custom Days</strong> - pick specific days (Mon, Wed, Fri)</li>
+        </ul>
+
+        <p className="mt-3"><strong>Other Features:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li><strong>Subtasks</strong> - break big tasks into smaller steps</li>
+          <li><strong>Attachments</strong> - upload files related to the task</li>
+          <li><strong>Dependencies</strong> - link tasks that depend on others</li>
+        </ul>
+      </Section>
+
+      <Section icon={Clock} title="Creating Routines">
+        <p><strong>What are Routines?</strong></p>
+        <p>Routines are daily habits that happen at the same time every day. Examples: "Morning workout at 7am", "Review emails at 9am", "Evening meditation at 8pm".</p>
         
-        <ScreenCard
-          icon={Square}
-          title="Kanban Board"
-          description="Drag-and-drop task management in columns"
-          features={[
-            { name: 'Three Columns', desc: 'To Do, In Progress, Done workflow' },
-            { name: 'Drag & Drop', desc: 'Move tasks between columns to update status' },
-            { name: 'Quick Complete', desc: 'Click checkmark to toggle task status' },
-            { name: 'Visual Overview', desc: 'See all tasks at a glance by status' },
-          ]}
-        />
-        
-        <ScreenCard
-          icon={CalendarBlank}
-          title="Calendar"
-          description="View tasks by date in a calendar grid"
-          features={[
-            { name: 'Month View', desc: 'See all tasks scheduled for each day' },
-            { name: 'Task Dots', desc: 'Color-coded dots show tasks for each date' },
-            { name: 'Navigate', desc: 'Move between months with arrows' },
-            { name: 'Upcoming List', desc: 'See all upcoming tasks below calendar' },
-          ]}
-        />
-        
-        <ScreenCard
-          icon={Heart}
-          title="Habits"
-          description="Build consistent daily routines with habit tracking"
-          features={[
-            { name: 'Create Habits', desc: 'Add habits like exercise, reading, meditation' },
-            { name: 'Daily Check-in', desc: 'Mark habits complete each day' },
-            { name: 'Streak Tracking', desc: 'See your current streak for each habit' },
-            { name: 'Weekly View', desc: 'Check the entire week at once' },
-          ]}
-        />
-        
-        <ScreenCard
-          icon={Link}
-          title="Link Device"
-          description="Sync tasks across multiple devices"
-          features={[
-            { name: 'Sync Code', desc: '12-character code to link devices' },
-            { name: 'Real-time Sync', desc: 'Changes sync instantly across devices' },
-            { name: 'Offline Support', desc: 'Works offline, syncs when back online' },
-          ]}
-        />
-        
-        <ScreenCard
-          icon={PaintBrush}
-          title="Appearance"
-          description="Customize how FlowForge looks and feels"
-          features={[
-            { name: 'Theme Mode', desc: 'Switch between light, dark, or system theme' },
-            { name: 'Color Customization', desc: 'Customize primary accent and colors' },
-            { name: 'Background Image', desc: 'Set custom background image' },
-            { name: 'Export/Import', desc: 'Download tasks as JSON, CSV, or Markdown' },
-          ]}
-          accent="text-app-primary"
-        />
-        
-        <ShortcutCard
-          shortcuts={[
-            { key: 'n', action: 'New task (focus input)' },
-            { key: 't', action: 'Go to Timer' },
-            { key: 'd', action: 'Go to Dashboard' },
-            { key: 's', action: 'Go to Settings' },
-            { key: 'l', action: 'Go to Link Device' },
-            { key: '/', action: 'Focus search' },
-            { key: 'j', action: 'Select next task' },
-            { key: 'k', action: 'Select previous task' },
-            { key: 'e', action: 'Edit task' },
-            { key: 'm', action: 'Toggle complete' },
-            { key: '?', action: 'Show shortcuts' },
-            { key: 'Esc', action: 'Close modal/clear' },
-          ]}
-        />
-        
-        <ScreenCard
-          icon={LinkBreak}
-          title="Webhooks & Integrations"
-          description="Connect FlowForge with external services"
-          features={[
-            { name: 'Webhooks', desc: 'HTTP POST when task events occur' },
-            { name: 'Google Calendar', desc: 'Sync tasks to your calendar' },
-            { name: 'Google Tasks', desc: 'Import tasks from Google Tasks' },
-            { name: 'Slack Notifications', desc: 'Get notified in Slack channels' },
-          ]}
-        />
-      </div>
+        <p className="mt-3"><strong>How to Create a Routine:</strong></p>
+        <ol className="list-decimal list-inside space-y-1 ml-2">
+          <li>Click the <strong>"New Routine"</strong> button on the Dashboard</li>
+          <li>Enter a title - your daily habit</li>
+          <li>Pick a time using the clock picker</li>
+          <li>Choose when it repeats:
+            <ul className="list-disc list-inside ml-6 mt-1">
+              <li><strong>All days</strong> - every single day</li>
+              <li><strong>Working days only</strong> - Monday to Friday (or your work schedule)</li>
+              <li><strong>Non-working days only</strong> - weekends and holidays</li>
+            </ul>
+          </li>
+          <li>Set priority and add tags</li>
+          <li>Enable notifications for daily reminders</li>
+          <li>Click "Create Routine"</li>
+        </ol>
+
+        <p className="mt-3"><strong>Routines vs Tasks:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Routines have NO due date - they repeat daily at the same time</li>
+          <li>Tasks have specific due dates and can be one-time or recurring</li>
+          <li>Routines appear in the calendar with a 🔄 icon</li>
+        </ul>
+      </Section>
+
+      <Section icon={CalendarBlank} title="Calendar View">
+        <p><strong>What you'll see:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>All your tasks with due dates</li>
+          <li>All your daily routines (shown with 🔄)</li>
+          <li>Color coding: routines are purple, high priority tasks are red</li>
+        </ul>
+
+        <p className="mt-3"><strong>How to use it:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Switch between Month, Week, and Day views</li>
+          <li>Click any date to see tasks for that day</li>
+          <li>Click a task to view details or edit</li>
+          <li>Use arrows to navigate between months/weeks/days</li>
+        </ul>
+      </Section>
+
+      <Section icon={SquaresFour} title="Kanban Board">
+        <p><strong>What it is:</strong></p>
+        <p>A visual board with three columns: To Do, In Progress, and Done.</p>
+
+        <p className="mt-3"><strong>How to use it:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Drag tasks between columns to change their status</li>
+          <li>Click the checkmark to quickly mark tasks as done</li>
+          <li>Great for seeing all your work at a glance</li>
+        </ul>
+      </Section>
+
+      <Section icon={Clock} title="Focus Timer (Pomodoro)">
+        <p><strong>What it is:</strong></p>
+        <p>A timer to help you focus on work in short bursts with breaks.</p>
+
+        <p className="mt-3"><strong>How it works:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li><strong>Work session:</strong> 25 minutes of focused work</li>
+          <li><strong>Short break:</strong> 5 minutes to rest</li>
+          <li><strong>Long break:</strong> 15 minutes after 4 work sessions</li>
+        </ul>
+
+        <p className="mt-3"><strong>How to use it:</strong></p>
+        <ol className="list-decimal list-inside ml-2 space-y-1">
+          <li>Go to the Focus page</li>
+          <li>Click "Start" to begin a work session</li>
+          <li>Work until the timer rings</li>
+          <li>Take your break when prompted</li>
+          <li>Repeat!</li>
+        </ol>
+      </Section>
+
+      <Section icon={Bell} title="Notifications">
+        <p><strong>How to enable:</strong></p>
+        <ol className="list-decimal list-inside ml-2 space-y-1">
+          <li>Go to Settings → Notifications</li>
+          <li>Toggle "Enable Browser Notifications"</li>
+          <li>Allow notifications when your browser asks</li>
+        </ol>
+
+        <p className="mt-3"><strong>When you'll get notified:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>15 minutes before a task is due</li>
+          <li>When a routine time arrives</li>
+          <li>Only for tasks/routines where you enabled notifications</li>
+        </ul>
+      </Section>
+
+      <Section icon={Gear} title="Work Schedule">
+        <p><strong>What it is:</strong></p>
+        <p>Tell FlowForge which days you work so routines can follow your schedule.</p>
+
+        <p className="mt-3"><strong>How to set it up:</strong></p>
+        <ol className="list-decimal list-inside ml-2 space-y-1">
+          <li>Go to Settings → Work Schedule</li>
+          <li>Toggle if Saturday is a working day for you</li>
+          <li>Click dates on the calendar to mark holidays/non-working days</li>
+          <li>Your "working days only" routines will respect this schedule</li>
+        </ol>
+      </Section>
+
+      <Section icon={Tag} title="Tags and Filters">
+        <p><strong>Using Tags:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Add tags when creating tasks (like #work, #urgent, #personal)</li>
+          <li>Use the filter dropdown on Dashboard to show only specific tags</li>
+          <li>Great for organizing tasks by project or category</li>
+        </ul>
+
+        <p className="mt-3"><strong>Other Filters:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li><strong>Search:</strong> Type keywords to find tasks</li>
+          <li><strong>Sort:</strong> By newest, due date, or priority</li>
+          <li><strong>Bulk Actions:</strong> Click "Bulk" to select multiple tasks</li>
+        </ul>
+      </Section>
+
+      <Section icon={Devices} title="Sync Across Devices">
+        <p><strong>How to sync:</strong></p>
+        <ol className="list-decimal list-inside ml-2 space-y-1">
+          <li>Sign in with Google on all your devices</li>
+          <li>Your tasks automatically sync in real-time</li>
+          <li>Works offline - syncs when you're back online</li>
+        </ol>
+
+        <p className="mt-3"><strong>Google Calendar Sync:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Click "Sync Calendar" on Dashboard</li>
+          <li>Imports events from Google Calendar as tasks</li>
+          <li>Exports your tasks to Google Calendar</li>
+          <li>Two-way sync keeps everything in sync</li>
+        </ul>
+      </Section>
+
+      <Section icon={PaintBrush} title="Customization">
+        <p><strong>Theme:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Go to Settings → Appearance</li>
+          <li>Choose Light, Dark, or System (follows your device)</li>
+        </ul>
+
+        <p className="mt-3"><strong>Export Your Data:</strong></p>
+        <ul className="list-disc list-inside ml-2 space-y-1">
+          <li>Settings → Export/Import</li>
+          <li>Download as JSON, CSV, or Markdown</li>
+          <li>Keep a backup or move to another app</li>
+        </ul>
+      </Section>
+
+      <Section icon={ArrowsClockwise} title="Quick Tips">
+        <ul className="list-disc list-inside ml-2 space-y-2">
+          <li><strong>Start simple:</strong> Create a few tasks and routines to get comfortable</li>
+          <li><strong>Use priorities:</strong> Mark important tasks as High priority</li>
+          <li><strong>Check daily:</strong> Review your calendar each morning</li>
+          <li><strong>Complete tasks:</strong> Click the checkbox to mark tasks done</li>
+          <li><strong>Try the timer:</strong> Use Focus mode when you need to concentrate</li>
+          <li><strong>Enable notifications:</strong> Never miss important tasks</li>
+          <li><strong>Organize with tags:</strong> Keep work and personal tasks separate</li>
+        </ul>
+      </Section>
 
       <footer className="mt-12 pt-8 border-t border-app-border/30 text-center">
-        <p className="text-sm text-app-muted mb-3">Press <kbd className="px-2 py-0.5 bg-app-surface border border-app-border/50 rounded text-xs font-mono">?</kbd> anytime to see keyboard shortcuts</p>
-        <p className="text-xs text-app-muted/60">FlowForge v1.0 - Task Management Made Simple</p>
+        <p className="text-sm text-app-muted mb-2">Need more help?</p>
+        <p className="text-xs text-app-muted/60">FlowForge is designed to be simple and intuitive. Just start using it and you'll get the hang of it!</p>
       </footer>
     </div>
   );

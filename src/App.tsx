@@ -13,6 +13,7 @@ import { Help } from './pages/Help';
 import { CalendarPage } from './pages/Calendar';
 import { HabitsPage } from './pages/Habits';
 import { KanbanPage } from './pages/Kanban';
+import { GettingStartedPopup } from './components/GettingStartedPopup';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, syncId, loading } = useAuth();
@@ -37,6 +38,7 @@ function App() {
         <AuthProvider>
           <ThemeProvider>
             <TaskProvider>
+              <GettingStartedPopup />
               <RequireAuth>
                 <Routes>
                   <Route path="/" element={<Layout />}>

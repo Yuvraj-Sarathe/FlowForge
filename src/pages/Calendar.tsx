@@ -30,7 +30,17 @@ export const CalendarPage: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const tasksWithDueDate = useMemo(() => tasks.filter(t => t.dueDate), [tasks]);
-  const getTasksForDate = (date: Date): Task[] => tasksWithDueDate.filter(task => isSameDay(new Date(task.dueDate!), date));
+  const routines = useMemo(() => tasks.filter(t => t.isRoutine), [tasks]);
+  
+  const getTasksForDate = (date: Date): Task[] => {
+    const regularTasks = tasksWithDueDate.filter(task => !task.isRoutine && isSameDay(new Date(task.dueDate!), date));
+    const dayRoutines = routines.filter(routine => {
+      if (routine.routineType === 'all') return true;
+      // Add work schedule check here later
+      return true;
+    });
+    return [...regularTasks, ...dayRoutines];
+  };
   
   const navigateMonth = (dir: 'prev' | 'next') => setCurrentDate(dir === 'prev' ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
   const navigateWeek = (dir: 'prev' | 'next') => setCurrentDate(dir === 'prev' ? addDays(currentDate, -7) : addDays(currentDate, 7));
@@ -143,7 +153,10 @@ export const CalendarPage: React.FC = () => {
                     <div className={`text-sm font-medium mb-2 ${isCurrentDay ? 'w-7 h-7 bg-app-primary text-app-primary-fg rounded-full flex items-center justify-center' : isCurrentMonth ? 'text-app-text' : 'text-app-muted/40'}`}>{format(day, 'd')}</div>
                     <div className="space-y-1">
                       {dayTasks.slice(0, 3).map(task => (
-                        <motion.div key={task.id} onClick={() => setSelectedTaskId(task.id)} className={`text-xs px-2 py-1 rounded truncate cursor-pointer transition-colors ${task.status === 'done' ? 'bg-app-surface/50 text-app-muted/60 line-through' : task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' : task.priority === 'medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' : 'bg-app-surface text-app-text'}`} whileHover={{ scale: 1.02 }}>{task.title}</motion.div>
+                        <motion.div key={task.id} onClick={(e) => { e.stopPropagation(); setSelectedTaskId(task.id); }} className={`text-xs px-2 py-1 rounded truncate cursor-pointer transition-colors ${
+                          task.isRoutine 
+                            ? 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                            : task.status === 'done' ? 'bg-app-surface/50 text-app-muted/60 line-through' : task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' : task.priority === 'medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' : 'bg-app-surface text-app-text'}`} whileHover={{ scale: 1.02 }}>{task.isRoutine ? '🔄 ' : ''}{task.title}</motion.div>
                       ))}
                       {dayTasks.length > 3 && <div className="text-xs text-app-muted/50 px-2">+{dayTasks.length - 3}</div>}
                     </div>
@@ -175,9 +188,13 @@ export const CalendarPage: React.FC = () => {
                     </button>
                     <div className="space-y-2">
                       {dayTasks.map(task => (
-                        <motion.div key={task.id} onClick={() => setSelectedTaskId(task.id)} className={`text-xs px-3 py-2 rounded-lg cursor-pointer ${task.status === 'done' ? 'bg-app-surface/50 text-app-muted/60 line-through' : 'bg-app-card border border-app-border hover:border-app-primary'}`} whileHover={{ scale: 1.02 }}>
-                          <p className="font-medium truncate">{task.title}</p>
-                          {task.dueDate && <p className="text-xs text-app-muted mt-1">{format(new Date(task.dueDate), 'h:mm a')}</p>}
+                        <motion.div key={task.id} onClick={(e) => { e.stopPropagation(); setSelectedTaskId(task.id); }} className={`text-xs px-3 py-2 rounded-lg cursor-pointer ${
+                          task.isRoutine
+                            ? 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                            : task.status === 'done' ? 'bg-app-surface/50 text-app-muted/60 line-through' : 'bg-app-card border border-app-border hover:border-app-primary'}`} whileHover={{ scale: 1.02 }}>
+                          <p className="font-medium truncate">{task.isRoutine ? '🔄 ' : ''}{task.title}</p>
+                          {task.dueDate && !task.isRoutine && <p className="text-xs text-app-muted mt-1">{format(new Date(task.dueDate), 'h:mm a')}</p>}
+                          {task.isRoutine && task.dueDate && <p className="text-xs text-app-muted mt-1">Daily at {format(new Date(task.dueDate), 'h:mm a')}</p>}
                         </motion.div>
                       ))}
                     </div>
@@ -193,13 +210,16 @@ export const CalendarPage: React.FC = () => {
           <div className="p-6">
             <div className="space-y-3">
               {getTasksForDate(currentDate).map(task => (
-                <motion.div key={task.id} onClick={() => setSelectedTaskId(task.id)} className="flex items-center gap-4 p-4 bg-app-surface rounded-xl cursor-pointer hover:bg-app-border transition-colors" whileHover={{ x: 4 }}>
-                  <button onClick={(e) => { e.stopPropagation(); updateTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' }); }}>
+                <motion.div key={task.id} onClick={() => setSelectedTaskId(task.id)} className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer hover:bg-app-border transition-colors ${
+                  task.isRoutine ? 'bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800' : 'bg-app-surface'
+                }`} whileHover={{ x: 4 }}>
+                  <button onClick={(e) => { e.stopPropagation(); if (!task.isRoutine) updateTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' }); }}>
                     {task.status === 'done' ? <CheckCircle weight="fill" className="w-6 h-6 text-app-primary" /> : <Circle className="w-6 h-6 text-app-muted" />}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-medium truncate ${task.status === 'done' ? 'text-app-muted line-through' : 'text-app-text'}`}>{task.title}</p>
-                    {task.dueDate && <p className="text-sm text-app-muted">{format(new Date(task.dueDate), 'h:mm a')}</p>}
+                    <p className={`font-medium truncate ${task.status === 'done' ? 'text-app-muted line-through' : 'text-app-text'}`}>{task.isRoutine ? '🔄 ' : ''}{task.title}</p>
+                    {task.dueDate && !task.isRoutine && <p className="text-sm text-app-muted">{format(new Date(task.dueDate), 'h:mm a')}</p>}
+                    {task.isRoutine && task.dueDate && <p className="text-sm text-purple-600 dark:text-purple-400">Daily routine at {format(new Date(task.dueDate), 'h:mm a')}</p>}
                     {task.description && <p className="text-sm text-app-muted mt-1">{task.description}</p>}
                   </div>
                   {task.priority === 'high' && <span className="px-3 py-1 bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400 text-xs font-semibold rounded">High</span>}
@@ -208,7 +228,7 @@ export const CalendarPage: React.FC = () => {
               {getTasksForDate(currentDate).length === 0 && (
                 <div className="text-center py-12 text-app-muted">
                   <Calendar className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>No tasks scheduled for this day</p>
+                  <p>No tasks or routines scheduled for this day</p>
                 </div>
               )}
             </div>

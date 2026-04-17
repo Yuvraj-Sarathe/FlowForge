@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CalendarBlank, Tag, Flag, Repeat, Link, ListChecks, Plus, Clock } from '@phosphor-icons/react';
+import { X, CalendarBlank, Tag, Flag, Repeat, Link, ListChecks, Plus, Paperclip, Bell } from '@phosphor-icons/react';
 import { useTasks } from '../contexts/TaskContext';
 import { sanitizeTitle, sanitizeTags } from '../lib/sanitize';
+import { TimePicker } from './TimePicker';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -18,16 +19,16 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [isRoutine, setIsRoutine] = useState(false);
-  const [routineType, setRoutineType] = useState<'all' | 'working' | 'nonworking'>('all');
   const [recurring, setRecurring] = useState(false);
-  const [recurrenceRule, setRecurrenceRule] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('daily');
+  const [recurrenceRule, setRecurrenceRule] = useState<'weekly' | 'monthly' | 'custom'>('weekly');
   const [customDays, setCustomDays] = useState<number[]>([]);
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
   const [dependentTask, setDependentTask] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,8 +49,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
       status: 'todo',
       tags: sanitizeTags(tags),
       dueDate,
-      isRoutine,
-      routineType: isRoutine ? routineType : undefined,
       recurring,
       recurrenceRule: recurring ? recurrenceRule : undefined,
       customRecurrenceDays: recurrenceRule === 'custom' ? customDays : undefined,
@@ -60,6 +59,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
         order: index,
       })),
       dependsOn: dependentTask.trim() || undefined,
+      attachments,
+      notificationsEnabled,
     });
 
     resetForm();
@@ -74,14 +75,14 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     setPriority('medium');
     setTags([]);
     setTagInput('');
-    setIsRoutine(false);
-    setRoutineType('all');
     setRecurring(false);
-    setRecurrenceRule('daily');
+    setRecurrenceRule('weekly');
     setCustomDays([]);
     setSubtasks([]);
     setSubtaskInput('');
     setDependentTask('');
+    setAttachments([]);
+    setNotificationsEnabled(true);
   };
 
   const addTag = () => {
@@ -110,6 +111,23 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     setCustomDays(prev => 
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAttachments(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -170,7 +188,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Title */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2">Task Title *</label>
               <input
@@ -184,7 +201,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2">Description</label>
               <textarea
@@ -196,7 +212,32 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               />
             </div>
 
-            {/* Date & Time Picker */}
+            <div>
+              <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
+                <Paperclip className="w-4 h-4" />
+                Attachments
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                className="w-full text-sm text-app-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-app-primary/10 file:text-app-primary hover:file:bg-app-primary/20 transition-all cursor-pointer"
+              />
+              {attachments.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {attachments.map((attachment, index) => (
+                    <div key={index} className="flex items-center gap-2 px-3 py-2 bg-app-surface rounded-lg">
+                      <Paperclip className="w-4 h-4 text-app-muted" />
+                      <span className="flex-1 text-sm text-app-text truncate">Attachment {index + 1}</span>
+                      <button type="button" onClick={() => removeAttachment(index)} className="text-app-muted hover:text-red-500">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
@@ -213,11 +254,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                 {showCalendar && (
                   <div className="absolute mt-2 bg-app-card border border-app-border rounded-xl p-4 shadow-xl z-20 w-80">
                     <div className="flex items-center justify-between mb-4">
-                      <button
-                        type="button"
-                        onClick={() => navigateMonth('prev')}
-                        className="p-2 hover:bg-app-surface rounded-lg transition-colors"
-                      >
+                      <button type="button" onClick={() => navigateMonth('prev')} className="p-2 hover:bg-app-surface rounded-lg transition-colors">
                         <svg className="w-5 h-5 text-app-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
@@ -225,11 +262,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                       <h3 className="text-sm font-semibold text-app-text">
                         {calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </h3>
-                      <button
-                        type="button"
-                        onClick={() => navigateMonth('next')}
-                        className="p-2 hover:bg-app-surface rounded-lg transition-colors"
-                      >
+                      <button type="button" onClick={() => navigateMonth('next')} className="p-2 hover:bg-app-surface rounded-lg transition-colors">
                         <svg className="w-5 h-5 text-app-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -269,16 +302,10 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               </div>
               <div>
                 <label className="block text-sm font-medium text-app-text mb-2">Time</label>
-                <input
-                  type="time"
-                  value={selectedTime}
-                  onChange={e => setSelectedTime(e.target.value)}
-                  className="w-full bg-app-surface border border-app-border rounded-xl px-4 py-3 text-app-text focus:border-app-primary outline-none"
-                />
+                <TimePicker value={selectedTime} onChange={setSelectedTime} />
               </div>
             </div>
 
-            {/* Priority */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
                 <Flag className="w-4 h-4" />
@@ -295,7 +322,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               </select>
             </div>
 
-            {/* Tags */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
                 <Tag className="w-4 h-4" />
@@ -326,39 +352,21 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               </div>
             </div>
 
-            {/* Task Type */}
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={isRoutine}
-                  onChange={e => setIsRoutine(e.target.checked)}
+                  checked={notificationsEnabled}
+                  onChange={e => setNotificationsEnabled(e.target.checked)}
                   className="w-5 h-5 rounded border-app-border text-app-primary focus:ring-app-primary"
                 />
                 <span className="text-sm font-medium text-app-text flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Daily Routine (not a one-time task)
+                  <Bell className="w-4 h-4" />
+                  Enable notifications for this task
                 </span>
               </label>
-              {isRoutine && (
-                <div className="mt-3 ml-8 space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" checked={routineType === 'all'} onChange={() => setRoutineType('all')} className="text-app-primary" />
-                    <span className="text-sm text-app-text">All days</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" checked={routineType === 'working'} onChange={() => setRoutineType('working')} className="text-app-primary" />
-                    <span className="text-sm text-app-text">Working days only</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" checked={routineType === 'nonworking'} onChange={() => setRoutineType('nonworking')} className="text-app-primary" />
-                    <span className="text-sm text-app-text">Non-working days only</span>
-                  </label>
-                </div>
-              )}
             </div>
 
-            {/* Recurring */}
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -379,7 +387,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                     onChange={e => setRecurrenceRule(e.target.value as any)}
                     className="w-full bg-app-surface border border-app-border rounded-xl px-4 py-2 text-app-text focus:border-app-primary outline-none"
                   >
-                    <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                     <option value="custom">Custom Days</option>
@@ -406,7 +413,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               )}
             </div>
 
-            {/* Subtasks */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
                 <ListChecks className="w-4 h-4" />
@@ -437,7 +443,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               </div>
             </div>
 
-            {/* Dependent Task */}
             <div>
               <label className="block text-sm font-medium text-app-text mb-2 flex items-center gap-2">
                 <Link className="w-4 h-4" />
@@ -452,7 +457,6 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               />
             </div>
 
-            {/* Actions */}
             <div className="flex gap-3 pt-4">
               <button
                 type="button"

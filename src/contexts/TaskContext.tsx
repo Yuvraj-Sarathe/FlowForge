@@ -31,10 +31,14 @@ export interface Task {
   googleTaskId?: string;
   googleTaskListId?: string;
   recurring?: boolean;
-  recurrenceRule?: 'daily' | 'weekly' | 'monthly';
+  recurrenceRule?: 'weekly' | 'monthly' | 'custom';
+  customRecurrenceDays?: number[];
   recurrenceEnd?: number;
   parentTaskId?: string;
   attachments?: Attachment[];
+  isRoutine?: boolean;
+  routineType?: 'all' | 'working' | 'nonworking';
+  notificationsEnabled?: boolean;
 }
 
 interface TaskContextType {
@@ -210,21 +214,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const getNextRecurrenceDate = (currentDueDate: string | undefined, rule: 'daily' | 'weekly' | 'monthly'): Date | null => {
+  const getNextRecurrenceDate = (currentDueDate: string | undefined, rule: 'weekly' | 'monthly' | 'custom'): Date | null => {
     if (!currentDueDate) return null;
     
     const date = new Date(currentDueDate);
     const now = new Date();
     
     switch (rule) {
-      case 'daily':
-        date.setDate(date.getDate() + 1);
-        break;
       case 'weekly':
         date.setDate(date.getDate() + 7);
         break;
       case 'monthly':
         date.setMonth(date.getMonth() + 1);
+        break;
+      case 'custom':
+        date.setDate(date.getDate() + 1);
         break;
     }
     
