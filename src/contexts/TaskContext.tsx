@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc, updateDoc, limit, orderBy, startAfter } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 import { addToSyncQueue, getSyncQueue, removeFromSyncQueue } from '../lib/idb';
+import { Attachment } from '../lib/storage';
 
 export interface Subtask {
   id: string;
@@ -32,10 +33,15 @@ export interface Task {
   recurring?: boolean;
   recurrenceRule?: 'daily' | 'weekly' | 'monthly';
   recurrenceEnd?: number;
+  parentTaskId?: string;
+  attachments?: Attachment[];
 }
 
 interface TaskContextType {
   tasks: Task[];
+  hasMore: boolean;
+  loadMore: () => Promise<void>;
+  isLoadingMore: boolean;
   addTask: (task: Omit<Task, 'id' | 'syncId' | 'createdAt'>) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -44,8 +50,28 @@ interface TaskContextType {
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
+const PAGE_SIZE = 50;
+
+/*
+ * FIRESTORE INDEXES REQUIRED
+ * 
+ * The following composite indexes need to be created in Firebase Console
+ * for optimal query performance at scale:
+ * 
+ * 1. tasks collection:
+ *    - Fields: syncId (asc), createdAt (desc) - [AUTO-CREATED for main query]
+ *    - Fields: syncId (asc), status (asc), createdAt (desc) - [for status filtering + pagination]
+ *    - Fields: syncId (asc), category (asc), createdAt (desc) - [for category filtering + pagination]
+ * 
+ * To create indexes, go to:
+ * Firebase Console -> Firestore -> Indexes -> Composite Indexes
+ */
+
 export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [lastTask, setLastTask] = useState<Task | null>(null);
   const { syncId } = useAuth();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -65,6 +91,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isOnline && syncId) {
       const syncOfflineData = async () => {
         const queue = await getSyncQueue();
+        const itemsToRemove: string[] = [];
+        
         for (const item of queue) {
           try {
             if (item.action === 'ADD' || item.action === 'UPDATE') {
@@ -72,11 +100,20 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (item.action === 'DELETE') {
               await deleteDoc(doc(db, item.collection, item.data.id));
             }
-            // Only remove from queue AFTER successful sync
-            await removeFromSyncQueue(item.id);
+            // Only mark for removal AFTER successful sync
+            itemsToRemove.push(item.id);
           } catch (e) {
             console.error('Failed to sync item', e);
-            // Keep in queue for retry
+            // Keep in queue for retry - do NOT remove
+          }
+        }
+        
+        // Remove all successfully synced items from queue
+        for (const id of itemsToRemove) {
+          try {
+            await removeFromSyncQueue(id);
+          } catch (e) {
+            console.error('Failed to remove synced item from queue', e);
           }
         }
       };
@@ -149,7 +186,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If completing a recurring task, create the next instance
         if (isCompletingRecurring && currentTask) {
           const nextDueDate = getNextRecurrenceDate(currentTask.dueDate, currentTask.recurrenceRule!);
-          if (nextDueDate && (!currentTask.recurrenceEnd || nextDueDate < currentTask.recurrenceEnd)) {
+          if (nextDueDate && (!currentTask.recurrenceEnd || nextDueDate.getTime() < currentTask.recurrenceEnd)) {
             const nextTask: Task = {
               ...currentTask,
               id: crypto.randomUUID(),
@@ -209,8 +246,58 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loadMore = useCallback(async () => {
+    if (!syncId || isLoadingMore || !hasMore) return;
+    
+    setIsLoadingMore(true);
+    try {
+      const lastTaskDoc = lastTask 
+        ? await import('firebase/firestore').then(m => m.doc(db, 'tasks', lastTask.id))
+        : null;
+      
+      const q = lastTaskDoc
+        ? query(
+            collection(db, 'tasks'),
+            where('syncId', '==', syncId),
+            orderBy('createdAt', 'desc'),
+            startAfter(lastTaskDoc),
+            limit(PAGE_SIZE)
+          )
+        : query(
+            collection(db, 'tasks'),
+            where('syncId', '==', syncId),
+            orderBy('createdAt', 'desc'),
+            limit(PAGE_SIZE)
+          );
+      
+      const snapshot = await import('firebase/firestore').then(m => 
+        new Promise<any>((resolve) => {
+          const unsubscribe = onSnapshot(q, (snap) => {
+            resolve(snap);
+            unsubscribe();
+          }, () => resolve({ empty: true, docs: [] }));
+        })
+      );
+      
+      if (snapshot.empty || snapshot.docs.length < PAGE_SIZE) {
+        setHasMore(false);
+      } else {
+        const newTasks: Task[] = [];
+        snapshot.docs.forEach((docSnap: any) => {
+          newTasks.push(docSnap.data() as Task);
+        });
+        setTasks(prev => [...prev, ...newTasks]);
+        setLastTask(newTasks[newTasks.length - 1]);
+      }
+    } catch (e) {
+      console.error('Failed to load more tasks', e);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [syncId, isLoadingMore, hasMore, lastTask]);
+
   return (
-    <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask, isOnline }}>
+    <TaskContext.Provider value={{ tasks, hasMore, loadMore, isLoadingMore, addTask, updateTask, deleteTask, isOnline }}>
       {children}
     </TaskContext.Provider>
   );

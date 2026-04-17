@@ -9,6 +9,10 @@ import { LinkDevice } from './pages/LinkDevice';
 import { PomodoroTimer } from './components/PomodoroTimer';
 import { Settings } from './pages/Settings';
 import { ToastProvider } from './components/ToastProvider';
+import { Help } from './pages/Help';
+import { CalendarPage } from './pages/Calendar';
+import { HabitsPage } from './pages/Habits';
+import { KanbanPage } from './pages/Kanban';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, syncId, loading } = useAuth();
@@ -40,6 +44,10 @@ function App() {
                     <Route path="timer" element={<PomodoroTimer />} />
                     <Route path="link" element={<LinkDevice />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="help" element={<Help />} />
+                    <Route path="calendar" element={<CalendarPage />} />
+                    <Route path="habits" element={<HabitsPage />} />
+                    <Route path="kanban" element={<KanbanPage />} />
                   </Route>
                 </Routes>
               </RequireAuth>

@@ -252,11 +252,12 @@ export const PomodoroTimer: React.FC = () => {
 
   const requestNotification = async () => {
     const granted = await requestNotificationPermission();
-    setNotificationPermission(granted);
-    if (!granted) {
-      toast.error('Notification permission denied');
-    } else {
+    if (granted) {
+      setNotificationPermission('granted');
       toast.success('Notifications enabled');
+    } else {
+      setNotificationPermission('denied');
+      toast.error('Notification permission denied');
     }
   };
 

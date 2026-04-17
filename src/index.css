@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700,800&f[]=geist-mono@400,500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Cabinet Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  
   --color-app-bg: var(--app-bg);
   --color-app-text: var(--app-text);
   --color-app-primary: var(--app-primary);
@@ -12,35 +13,74 @@
   --color-app-border: var(--app-border);
   --color-app-muted: var(--app-muted);
   --color-app-surface: var(--app-surface);
+  --color-app-accent: var(--app-accent);
 }
 
 :root {
+  /* Premium Minimal Palette - Electric Emerald Accent */
   --app-bg: #fafafa;
-  --app-text: #09090b;
-  --app-primary: #0d9488;
+  --app-text: #18181b;
+  --app-primary: #10b981;
   --app-primary-fg: #ffffff;
   --app-card: #ffffff;
-  --app-border: #e4e4e7;
+  --app-border: #e4e5e7;
   --app-muted: #71717a;
   --app-surface: #f4f4f5;
-  --app-bg-image: none;
+  --app-accent: #10b981;
+  
+  /* Diffusion Shadow */
+  --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  
+  /* Glassmorphism */
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  /* Motion */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --app-bg: #09090b;
+  --app-text: #fafafa;
+  --app-primary: #10b981;
+  --app-primary-fg: #ffffff;
+  --app-card: #18181b;
+  --app-border: #27272a;
+  --app-muted: #a1a1aa;
+  --app-surface: #27272a;
+  --app-accent: #10b981;
+  
+  --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  
+  color-scheme: dark;
+}
+
+:root {
+  color-scheme: light;
 }
 
 body {
   background-color: var(--app-bg);
   color: var(--app-text);
-  background-image: var(--app-bg-image);
+  background-image: var(--app-bg-image, none);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.01em;
 }
 
-/* Custom Scrollbar for a premium feel */
+/* Premium Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -49,21 +89,62 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--app-border);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--app-muted);
 }
 
+/* Focus Ring */
+*:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--app-primary);
+  color: var(--app-primary-fg);
+}
+
 /* Tiptap Editor Styles */
 .ProseMirror {
   outline: none;
 }
+
 .ProseMirror p.is-editor-empty:first-child::before {
   color: var(--app-muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+/* Utility for liquid glass effect */
+.glass-panel {
+  background: var(--app-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--shadow-card);
+  backdrop-filter: blur(12px);
+}
+
+/* Diffusion shadow for cards */
+.diffusion-shadow {
+  box-shadow: var(--shadow-diffusion);
+}
+
+/* Spring animation base */
+.spring-transition {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Magnetic button cursor */
+.magnetic-cursor {
+  cursor: grab;
+}
+
+.magnetic-cursor:active {
+  cursor: grabbing;
 }

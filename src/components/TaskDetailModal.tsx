@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Task, useTasks } from '../contexts/TaskContext';
 import { useAuth } from '../contexts/AuthContext';
-import { X, Plus, CheckCircle, Trash, CalendarBlank, Clock } from '@phosphor-icons/react';
+import { X, Plus, CheckCircle, Trash, CalendarBlank, Clock, Paperclip, Eye, DownloadSimple } from '@phosphor-icons/react';
 import { syncTaskToCalendar, syncTaskToGoogleTask } from '../lib/googleApi';
+import { uploadAttachment, formatFileSize, isImageFile, Attachment } from '../lib/storage';
 
 interface Props {
   task: Task;
@@ -12,10 +13,12 @@ interface Props {
 
 export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
   const { tasks, updateTask, deleteTask } = useTasks();
-  const { googleAccessToken } = useAuth();
+  const { googleAccessToken, syncId } = useAuth();
   const [newSubtask, setNewSubtask] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [dependentTasksToPrompt, setDependentTasksToPrompt] = useState<Task[] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-sync changes to Google Calendar / Tasks
   useEffect(() => {
@@ -29,6 +32,32 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
 
     return () => clearTimeout(timer);
   }, [task, googleAccessToken]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !syncId) return;
+
+    setIsUploading(true);
+    try {
+      const attachment = await uploadAttachment(file, syncId, task.id);
+      const currentAttachments = task.attachments || [];
+      updateTask(task.id, {
+        attachments: [...currentAttachments, attachment],
+      });
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAttachment = (attachment: Attachment) => {
+    const currentAttachments = task.attachments || [];
+    updateTask(task.id, {
+      attachments: currentAttachments.filter(a => a.id !== attachment.id),
+    });
+  };
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,6 +257,55 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
               placeholder="work, urgent"
               className="w-full bg-app-bg border border-app-border rounded-xl p-2 text-sm text-app-text focus:border-app-primary outline-none transition-colors"
             />
+          </div>
+
+          <div>
+            <h3 className="text-xs uppercase tracking-[0.1em] font-bold text-app-muted mb-2 block">Attachments</h3>
+            <div className="space-y-2 mb-3">
+              {(task.attachments || []).map(attachment => (
+                <div key={attachment.id} className="flex items-center gap-3 p-2 bg-app-surface rounded-lg group">
+                  {isImageFile(attachment.type) ? (
+                    <img src={attachment.url} alt={attachment.name} className="w-10 h-10 object-cover rounded" />
+                  ) : (
+                    <div className="w-10 h-10 bg-app-border rounded flex items-center justify-center">
+                      <Paperclip className="w-5 h-5 text-app-muted" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-app-text truncate">{attachment.name}</p>
+                    <p className="text-xs text-app-muted">{formatFileSize(attachment.size)}</p>
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isImageFile(attachment.type) && (
+                      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="p-1 text-app-muted hover:text-app-primary">
+                        <Eye className="w-4 h-4" />
+                      </a>
+                    )}
+                    <a href={attachment.url} download className="p-1 text-app-muted hover:text-app-primary">
+                      <DownloadSimple className="w-4 h-4" />
+                    </a>
+                    <button onClick={() => handleRemoveAttachment(attachment)} className="p-1 text-app-muted hover:text-red-500">
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-app-muted hover:text-app-primary bg-app-surface rounded-lg transition-colors disabled:opacity-50"
+            >
+              <Paperclip className="w-4 h-4" />
+              {isUploading ? 'Uploading...' : 'Add Attachment'}
+            </button>
           </div>
 
           <div>

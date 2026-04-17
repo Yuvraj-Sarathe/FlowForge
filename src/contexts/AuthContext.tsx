@@ -33,7 +33,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Fetch or create syncId
+        const storedToken = localStorage.getItem('flowforge_google_token');
+        if (storedToken) setGoogleAccessToken(storedToken);
+        
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
           if (userDoc.exists()) {
@@ -47,7 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Failed to fetch/create syncId', error);
         }
       } else {
-        // Check local storage for linked device syncId
         const localSyncId = localStorage.getItem('flowforge_sync_id');
         if (localSyncId) {
           setSyncId(localSyncId);
@@ -63,10 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (): Promise<string | null> => {
     setError(null);
     try {
+      googleProvider.addScope('https://www.googleapis.com/auth/calendar');
       const result = await signInWithPopup(auth, googleProvider);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (credential?.accessToken) {
         setGoogleAccessToken(credential.accessToken);
+        localStorage.setItem('flowforge_google_token', credential.accessToken);
         return credential.accessToken;
       }
       return null;
@@ -80,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logOut = async () => {
     await signOut(auth);
     localStorage.removeItem('flowforge_sync_id');
+    localStorage.removeItem('flowforge_google_token');
     setSyncId(null);
     setGoogleAccessToken(null);
   };

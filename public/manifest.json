@@ -1,0 +1,40 @@
+{
+  "name": "FlowForge - Task Management",
+  "short_name": "FlowForge",
+  "description": "Focus. Flow. Task Management Made Simple.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Task",
+      "short_name": "New",
+      "description": "Create a new task",
+      "url": "/?new=true"
+    },
+    {
+      "name": "Timer",
+      "short_name": "Timer",
+      "description": "Open Pomodoro timer",
+      "url": "/timer"
+    }
+  ]
+}
