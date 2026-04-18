@@ -156,6 +156,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lastTask, setLastTask] = useState<Task | null>(null);
   const { syncId } = useAuth();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isFirestoreOffline, setIsFirestoreOffline] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -221,11 +222,15 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const sortedTasks = tasksData.sort((a, b) => b.createdAt - a.createdAt);
       setTasks(sortedTasks);
+      setIsFirestoreOffline(false);
       
       // Restore notifications after tasks are loaded
       restoreNotifications(sortedTasks);
     }, (error) => {
       console.error('Firestore listen error:', error);
+      if (error.code === 'unavailable') {
+        setIsFirestoreOffline(true);
+      }
     });
 
     return unsubscribe;
@@ -539,6 +544,11 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <TaskContext.Provider value={{ tasks, hasMore, loadMore, isLoadingMore, addTask, updateTask, deleteTask, isOnline }}>
       {children}
+      {isFirestoreOffline && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
+          Offline - Changes will sync when reconnected
+        </div>
+      )}
     </TaskContext.Provider>
   );
 };

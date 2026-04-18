@@ -16,6 +16,8 @@ export default defineConfig(({mode}) => {
         manifest: false,
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+          navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -47,6 +49,15 @@ export default defineConfig(({mode}) => {
               options: {
                 cacheName: 'google-api-cache',
                 expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 }
+              }
+            },
+            {
+              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'firestore-cache',
+                networkTimeoutSeconds: 3,
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 }
               }
             }
           ]
