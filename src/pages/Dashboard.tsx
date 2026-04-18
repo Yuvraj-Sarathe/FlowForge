@@ -202,15 +202,19 @@ export const Dashboard: React.FC = () => {
     
     setIsSyncing(true);
     try {
-      // Step 1: Get Google Tasks list
-      const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Step 1: Get or retrieve cached Google Tasks list
+      let taskListId = localStorage.getItem('flowforge_google_tasklist_id');
       
-      let taskListId = '';
-      if (listsRes.ok) {
-        const listsData = await listsRes.json();
-        taskListId = listsData.items?.[0]?.id || '';
+      if (!taskListId) {
+        const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (listsRes.ok) {
+          const listsData = await listsRes.json();
+          taskListId = listsData.items?.[0]?.id || '';
+          if (taskListId) localStorage.setItem('flowforge_google_tasklist_id', taskListId);
+        }
       }
       
       if (!taskListId) {
@@ -230,8 +234,7 @@ export const Dashboard: React.FC = () => {
           if (gTask.title) {
             const existingTask = tasks.find(t => isTodoTask(t) && t.googleTaskId === gTask.id);
             if (!existingTask) {
-              const newTask: TodoTask = {
-                id: crypto.randomUUID(),
+              const newTask: Omit<TodoTask, 'id' | 'syncId' | 'createdAt' | 'lastModified'> = {
                 type: 'task',
                 title: gTask.title,
                 description: gTask.notes || undefined,
@@ -241,9 +244,6 @@ export const Dashboard: React.FC = () => {
                 googleTaskId: gTask.id,
                 googleTaskListId: taskListId,
                 tags: [],
-                syncId: syncId,
-                createdAt: Date.now(),
-                lastModified: Date.now(),
               };
               await addTask(newTask);
               importCount++;
@@ -259,12 +259,16 @@ export const Dashboard: React.FC = () => {
       for (const task of tasksToExport) {
         if (!isTodoTask(task)) continue;
         
-        const gTask = {
+        const gTask: any = {
           title: task.title,
           notes: task.description || '',
           status: task.status === 'done' ? 'completed' : 'needsAction',
           due: task.dueDate || undefined,
         };
+        
+        if (task.status === 'done' && task.completedAt) {
+          gTask.completed = new Date(task.completedAt).toISOString();
+        }
         
         const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, { 
           method: 'POST', 

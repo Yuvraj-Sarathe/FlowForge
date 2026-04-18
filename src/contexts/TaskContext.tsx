@@ -20,17 +20,21 @@ const syncTaskToGoogleTasks = async (task: TodoTask) => {
       return;
     }
     
-    const gTask = {
+    const gTask: any = {
       title: task.title,
       notes: task.description || '',
       status: task.status === 'done' ? 'completed' : 'needsAction',
       due: task.dueDate || undefined,
     };
     
+    if (task.status === 'done' && task.completedAt) {
+      gTask.completed = new Date(task.completedAt).toISOString();
+    }
+    
     console.log('Syncing task to Google Tasks:', task.title, 'Status:', task.status);
     
     const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${task.googleTaskListId}/tasks/${task.googleTaskId}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 
         'Authorization': `Bearer ${token}`, 
         'Content-Type': 'application/json' 
@@ -267,6 +271,50 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isOnline) {
       try {
         await setDoc(doc(db, 'tasks', newTask.id), newTask);
+        
+        // Auto-create in Google Tasks if token exists and it's a task
+        if (isTodoTask(newTask)) {
+          const token = localStorage.getItem('flowforge_google_token');
+          if (token) {
+            let taskListId = localStorage.getItem('flowforge_google_tasklist_id');
+            
+            if (!taskListId) {
+              const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (listsRes.ok) {
+                const listsData = await listsRes.json();
+                taskListId = listsData.items?.[0]?.id || '';
+                if (taskListId) localStorage.setItem('flowforge_google_tasklist_id', taskListId);
+              }
+            }
+            
+            if (taskListId) {
+              const gTask: any = {
+                title: newTask.title,
+                notes: newTask.description || '',
+                status: newTask.status === 'done' ? 'completed' : 'needsAction',
+                due: newTask.dueDate || undefined,
+              };
+              
+              if (newTask.status === 'done' && newTask.completedAt) {
+                gTask.completed = new Date(newTask.completedAt).toISOString();
+              }
+              
+              const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(gTask)
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                await updateDoc(doc(db, 'tasks', newTask.id), { googleTaskId: data.id, googleTaskListId: taskListId });
+                console.log('Auto-created task in Google Tasks:', data.id);
+              }
+            }
+          }
+        }
       } catch (e) {
         console.error('Failed to create task', e);
         await addToSyncQueue('ADD', 'tasks', newTask);
@@ -335,9 +383,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
-    // Sync to Google Tasks if task has googleTaskId
+    // Sync to Google Tasks if task has googleTaskId (non-blocking)
     if (isTodoTask(updatedTask) && updatedTask.googleTaskId && updatedTask.googleTaskListId) {
-      syncTaskToGoogleTasks(updatedTask);
+      syncTaskToGoogleTasks(updatedTask).catch(console.error);
     }
     
     if (isOnline) {
@@ -397,9 +445,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTasks(prev => prev.filter(t => t.id !== id));
     cancelNotification(id);
     
-    // Delete from Google Tasks if it has googleTaskId
+    // Delete from Google Tasks if it has googleTaskId (non-blocking)
     if (taskToDelete && isTodoTask(taskToDelete) && taskToDelete.googleTaskId && taskToDelete.googleTaskListId) {
-      deleteFromGoogleTasks(taskToDelete.googleTaskId, taskToDelete.googleTaskListId);
+      deleteFromGoogleTasks(taskToDelete.googleTaskId, taskToDelete.googleTaskListId).catch(console.error);
     }
     
     if (isOnline) {
