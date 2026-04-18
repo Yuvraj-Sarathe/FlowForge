@@ -55,8 +55,9 @@ service cloud.firestore {
       let validSubtasks = !('subtasks' in data) || (data.subtasks is list && data.subtasks.size() <= 50);
       let validFocusMinutes = !('totalFocusMinutes' in data) || (data.totalFocusMinutes is number);
       let validLastFocus = !('lastFocusSession' in data) || (data.lastFocusSession is number);
+      let validAttachments = !('attachments' in data) || (data.attachments is list && data.attachments.size() <= 20);
 
-      return hasRequired && hasValidTypes && validDesc && validDueDate && validTags && validSubtasks && validFocusMinutes && validLastFocus;
+      return hasRequired && hasValidTypes && validDesc && validDueDate && validTags && validSubtasks && validFocusMinutes && validLastFocus && validAttachments;
     }
 
     match /users/{userId} {
@@ -76,6 +77,16 @@ service cloud.firestore {
       allow update: if isValidTask(request.resource.data) && 
                        resource.data.syncId == request.resource.data.syncId;
                        
+      allow delete: if resource.data.syncId is string;
+    }
+
+    match /habitCompletions/{completionId} {
+      allow read: if resource.data.syncId is string;
+      allow create: if request.resource.data.keys().hasAll(['routineId', 'syncId', 'timestamp', 'date']) &&
+                       request.resource.data.routineId is string &&
+                       request.resource.data.syncId is string &&
+                       request.resource.data.timestamp is number &&
+                       request.resource.data.date is string;
       allow delete: if resource.data.syncId is string;
     }
   }

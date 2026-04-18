@@ -142,7 +142,7 @@ export const fetchGoogleTasks = async (token: string): Promise<{ tasks: any[], t
     const defaultList = listsData.items?.[0];
     if (!defaultList) return { tasks: [], taskListId: '' };
 
-    const tasksRes = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${defaultList.id}/tasks?showHidden=false`, {
+    const tasksRes = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${defaultList.id}/tasks?showHidden=false&showCompleted=false`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!tasksRes.ok) {

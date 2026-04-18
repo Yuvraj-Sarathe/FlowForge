@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 import { addToSyncQueue, getSyncQueue, removeFromSyncQueue } from '../lib/idb';
 import { Attachment } from '../lib/storage';
 import { scheduleTaskNotification, scheduleRoutineNotification, cancelNotification, restoreNotifications } from '../lib/notificationScheduler';
-import { recordCompletion } from '../lib/habitTracking';
+import { recordCompletion } from '../lib/habitTrackingFirestore';
 import { syncTaskToCalendar, updateCalendarEvent } from '../lib/googleApi';
 
 // Helper function to sync task updates to Google Tasks
@@ -388,8 +388,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
     
     // Record habit completion for routines
-    if (updates.status === 'done' && currentTask && isRoutine(currentTask)) {
-      recordCompletion(currentTask.id);
+    if (updates.status === 'done' && currentTask && isRoutine(currentTask) && syncId) {
+      recordCompletion(currentTask.id, syncId).catch(console.error);
     }
     
     // Update notifications
