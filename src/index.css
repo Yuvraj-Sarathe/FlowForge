@@ -71,10 +71,52 @@ body {
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "ss01", "ss02";
   letter-spacing: -0.01em;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  background: transparent;
+}
+
+/* Make cards semi-transparent when background image is present */
+body[data-has-bg="true"] .bg-app-card {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body[data-has-bg="true"] .bg-app-bg {
+  background-color: rgba(250, 250, 250, 0.5) !important;
+}
+
+body[data-has-bg="true"] .bg-app-surface {
+  background-color: rgba(244, 244, 245, 0.6) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dark body[data-has-bg="true"] .bg-app-card {
+  background-color: rgba(24, 24, 27, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark body[data-has-bg="true"] .bg-app-bg {
+  background-color: rgba(9, 9, 11, 0.5) !important;
+}
+
+.dark body[data-has-bg="true"] .bg-app-surface {
+  background-color: rgba(39, 39, 42, 0.6) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* Premium Custom Scrollbar */
