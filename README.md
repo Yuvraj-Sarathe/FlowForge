@@ -1,43 +1,125 @@
-# FlowForge
+<div align="center">
 
-A production-ready, cross-platform productivity application built with React 19, Vite, TypeScript, and Firebase. Designed for individuals who need to organize tasks across multiple devices with offline-first capabilities.
+# 🚀 FlowForge
 
-## Features
+### Your Free, All-in-One Productivity Companion
 
-### Core Functionality
-- **Task Management**: Full CRUD with subtasks, priorities, tags, and due dates
-- **Offline-First Sync**: Uses IndexedDB to queue actions when offline, syncs with Firestore when back online
-- **Device Linking**: Sync tasks across devices using a 12-character sync ID or QR code
-- **Natural Language Quick Add**: Add tasks like "Review PR tomorrow at 10am #work !high" using chrono-node
-- **Pomodoro Timer**: Built-in focus timer with SVG animations (25min focus / 5min break)
-- **Theme Customization**: 9 customizable color variables with background image support
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_App-10b981?style=for-the-badge)](https://flowforge-f5e99.web.app)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+[![Made with React](https://img.shields.io/badge/Made_with-React_19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
+[![Firebase](https://img.shields.io/badge/Powered_by-Firebase-orange?style=for-the-badge&logo=firebase)](https://firebase.google.com)
 
-### Integrations
-- **Google Calendar**: Sync tasks with due dates to Google Calendar
-- **Google Tasks**: Import tasks from Google Tasks
-- **Calendar Events**: Import upcoming events as tasks
+<a href="https://flowforge-f5e99.web.app">
+  <img src="public/icon-512.png" alt="FlowForge Logo" width="120" height="120">
+</a>
 
-### Architecture
-- **State Management**: React Context API (Auth, Task, Theme contexts)
-- **Persistence**: Firebase Firestore with IndexedDB persistence enabled
-- **Offline Queue**: IndexedDB via idb library for sync queue
-- **Authentication**: Google Sign-In via Firebase Auth
+**[✨ Try FlowForge Now](https://flowforge-f5e99.web.app)** • **[📖 Documentation](#features)** • **[🐛 Report Bug](https://github.com/Mikky-mlh/FlowForge/issues)**
 
-## Technology Stack
+---
 
-| Category | Technology | Version |
-|----------|------------|---------|
-| UI Framework | React | 19.0.0 |
-| Build Tool | Vite | 6.2.0 |
-| Language | TypeScript | ~5.8.2 |
-| Routing | React Router DOM | 7.14.1 |
-| Styling | Tailwind CSS | 4.1.14 |
-| Animations | Framer Motion | 12.38.0 |
-| Backend | Firebase | 12.12.0 |
-| IndexedDB | IDB | 8.0.3 |
-| Date Parsing | chrono-node | 2.9.0 |
+</div>
 
-## Quick Start
+## 💡 Why FlowForge?
+
+> *"I searched for a free To-Do and routine manager app for a long time online but I could not find it! Either they lacked what I wanted them to be able to do or they just charged money for the things I wanted. No single 100% free app with a rather simple UI/UX, so I made one for myself that satisfies my needs!"*
+
+**FlowForge is:**
+- ✅ **100% Free** - No premium features, no paywalls, no subscriptions
+- ✅ **Simple & Clean** - Intuitive UI/UX that just works
+- ✅ **Feature-Complete** - Everything you need, nothing you don't
+- ✅ **Privacy-Focused** - Your data, your control
+- ✅ **Cross-Platform** - Works on Android, iOS, Windows, Mac, Linux
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 📋 Task Management
+- ✅ Create, edit, delete tasks
+- ✅ Subtasks & checklists
+- ✅ Priority levels (Low, Medium, High)
+- ✅ Tags & categories
+- ✅ Due dates & reminders
+- ✅ Natural language input
+
+### ⏱️ Pomodoro Timer
+- ✅ 25-minute focus sessions
+- ✅ 5-minute breaks
+- ✅ Visual progress tracking
+- ✅ Customizable durations
+
+### 📅 Calendar & Planning
+- ✅ Calendar view
+- ✅ Kanban board
+- ✅ Habit tracking
+- ✅ Routine management
+
+</td>
+<td width="50%">
+
+### 🔄 Sync & Offline
+- ✅ Cross-device sync
+- ✅ Offline-first architecture
+- ✅ QR code device linking
+- ✅ Auto-sync when online
+
+### 🎨 Customization
+- ✅ Dark/Light themes
+- ✅ Custom color schemes
+- ✅ Background images
+- ✅ Glassmorphism effects
+
+### 🔐 Authentication
+- ✅ Google Sign-In
+- ✅ Anonymous mode
+- ✅ Secure data storage
+
+</td>
+</tr>
+</table>
+
+---
+
+## 💻 Technology Stack
+
+<div align="center">
+
+| Category | Technology |
+|----------|------------|
+| 🏛️ **Frontend** | React 19, TypeScript, Tailwind CSS 4 |
+| ⚡ **Build Tool** | Vite 6.2 |
+| 🔥 **Backend** | Firebase (Auth, Firestore, Hosting) |
+| 🎨 **UI/UX** | Framer Motion, Lucide Icons |
+| 💾 **Storage** | IndexedDB (idb), Firestore |
+| 📦 **PWA** | Vite PWA Plugin, Workbox |
+
+</div>
+
+---
+
+## 🚀 Quick Start
+
+### 📱 Install as App (Recommended)
+
+**Android:**
+1. Visit [flowforge-f5e99.web.app](https://flowforge-f5e99.web.app)
+2. Tap menu (⋮) → "Install app"
+3. Done! App on your home screen
+
+**Desktop (Chrome/Edge):**
+1. Visit [flowforge-f5e99.web.app](https://flowforge-f5e99.web.app)
+2. Click install icon (⊕) in address bar
+3. Click "Install"
+
+**iOS (Safari):**
+1. Visit [flowforge-f5e99.web.app](https://flowforge-f5e99.web.app)
+2. Tap Share → "Add to Home Screen"
+
+### 🛠️ Development Setup
 
 ### Prerequisites
 - Node.js 18+
@@ -193,4 +275,46 @@ Requires IndexedDB support (excludes private browsing in some browsers).
 
 ---
 
-Built with React 19 + Firebase + Tailwind CSS v4
+## 📸 Screenshots
+
+<div align="center">
+
+*Coming soon - Add your app screenshots here!*
+
+</div>
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+- 🐛 Report bugs
+- 💡 Suggest features
+- 🛠️ Submit pull requests
+
+---
+
+## 📝 License
+
+MIT License - feel free to use this project for personal or commercial purposes.
+
+---
+
+## 👤 Author
+
+**Yuvraj Sarathe**
+
+- GitHub: [@Mikky-mlh](https://github.com/Mikky-mlh)
+- Project: [FlowForge](https://github.com/Mikky-mlh/FlowForge)
+
+---
+
+<div align="center">
+
+### ⭐ If you find FlowForge useful, give it a star!
+
+**[🚀 Try FlowForge Now](https://flowforge-f5e99.web.app)**
+
+Made with ❤️ and lots of ☕
+
+</div>
