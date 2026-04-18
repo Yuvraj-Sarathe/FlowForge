@@ -10,7 +10,7 @@ const navItems = [
   { to: '/', icon: CheckCircle, label: 'Tasks' },
   { to: '/timer', icon: Clock, label: 'Focus' },
   { to: '/link', icon: QrCode, label: 'Link' },
-  { to: '/settings', icon: PaintBrush, label: 'Appearance' },
+  { to: '/settings', icon: PaintBrush, label: 'Settings' },
   { to: '/help', icon: Question, label: 'Help' },
   { to: '/calendar', icon: CalendarBlank, label: 'Calendar' },
   { to: '/habits', icon: Heart, label: 'Habits' },
