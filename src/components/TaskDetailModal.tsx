@@ -125,12 +125,26 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
       return;
     }
     
-    if (!task.googleTaskListId) {
-      addToast('Task list not found. Please sync from Dashboard first.', 'error');
-      return;
-    }
-    
     try {
+      // Get task list ID if not present
+      let taskListId = task.googleTaskListId;
+      
+      if (!taskListId) {
+        const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
+          headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+        });
+        
+        if (listsRes.ok) {
+          const listsData = await listsRes.json();
+          taskListId = listsData.items?.[0]?.id;
+        }
+        
+        if (!taskListId) {
+          addToast('No Google Tasks list found. Please create one in Google Tasks.', 'error');
+          return;
+        }
+      }
+      
       const gTask = {
         title: task.title,
         notes: task.description || '',
@@ -140,8 +154,8 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
       
       const method = task.googleTaskId ? 'PUT' : 'POST';
       const url = task.googleTaskId
-        ? `https://tasks.googleapis.com/tasks/v1/lists/${task.googleTaskListId}/tasks/${task.googleTaskId}`
-        : `https://tasks.googleapis.com/tasks/v1/lists/${task.googleTaskListId}/tasks`;
+        ? `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${task.googleTaskId}`
+        : `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`;
       
       const response = await fetch(url, {
         method,
@@ -154,14 +168,18 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
       
       if (response.ok) {
         const data = await response.json();
-        if (!task.googleTaskId) {
-          updateTask(task.id, { googleTaskId: data.id });
-        }
+        updateTask(task.id, { 
+          googleTaskId: data.id,
+          googleTaskListId: taskListId 
+        });
         addToast('Synced to Google Tasks!', 'success');
       } else {
+        const errorText = await response.text();
+        console.error('Failed to sync:', errorText);
         addToast('Failed to sync to Google Tasks.', 'error');
       }
     } catch (error) {
+      console.error('Sync error:', error);
       addToast('Failed to sync to Google Tasks.', 'error');
     }
   };
