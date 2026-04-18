@@ -199,3 +199,45 @@ input[type="range"]::-moz-range-thumb {
 input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.1);
 }
+
+/* Custom Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.custom-toast {
+  background: var(--app-card);
+  color: var(--app-text);
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: var(--shadow-diffusion);
+  animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  border-left: 4px solid transparent;
+}
+
+.custom-toast.success {
+  border-left-color: var(--app-primary);
+}
+
+.custom-toast.error {
+  border-left-color: #ef4444;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
