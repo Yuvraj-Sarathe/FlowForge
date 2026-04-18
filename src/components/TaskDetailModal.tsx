@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Task, useTasks } from '../contexts/TaskContext';
 import { useAuth } from '../contexts/AuthContext';
 import { X, Plus, CheckCircle, Trash, CalendarBlank, Clock, Paperclip, Eye, DownloadSimple } from '@phosphor-icons/react';
-import { syncTaskToCalendar, syncTaskToGoogleTask } from '../lib/googleApi';
 import { uploadAttachment, formatFileSize, isImageFile, Attachment } from '../lib/storage';
 import { useToast } from '../contexts/ToastContext';
 import { TimePicker } from './TimePicker';
