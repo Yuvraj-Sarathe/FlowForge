@@ -94,7 +94,6 @@ function MobileNavItem({ to, icon: Icon, label }: NavItemProps) {
 
 export const Layout: React.FC = () => {
   const { user, logOut, signIn, syncId } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex h-[100dvh] w-full bg-app-bg text-app-text font-sans overflow-hidden">
@@ -191,13 +190,6 @@ export const Layout: React.FC = () => {
           <MobileNavItem key={item.to} to={item.to} icon={item.icon} label={item.label} />
         ))}
       </nav>
-
-      {/* Mobile FAB */}
-      <div className="md:hidden fixed bottom-4 right-4 z-50">
-        <motion.button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="w-12 h-12 rounded-full bg-app-primary text-app-primary-fg flex items-center justify-center shadow-xl shadow-app-primary/25">
-          <List className="w-5 h-5" />
-        </motion.button>
-      </div>
     </div>
   );
 };
