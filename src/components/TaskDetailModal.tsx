@@ -114,70 +114,7 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
 
   const availableTasks = tasks.filter(t => t.id !== task.id);
 
-  const handleSyncToGoogleTasks = async () => {
-    if (!googleAccessToken) {
-      addToast('Please sign in with Google to sync.', 'error');
-      return;
-    }
-    
-    try {
-      // Get task list ID if not present
-      let taskListId = task.googleTaskListId;
-      
-      if (!taskListId) {
-        const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
-          headers: { 'Authorization': `Bearer ${googleAccessToken}` }
-        });
-        
-        if (listsRes.ok) {
-          const listsData = await listsRes.json();
-          taskListId = listsData.items?.[0]?.id;
-        }
-        
-        if (!taskListId) {
-          addToast('No Google Tasks list found. Please create one in Google Tasks.', 'error');
-          return;
-        }
-      }
-      
-      const gTask = {
-        title: task.title,
-        notes: task.description || '',
-        status: task.status === 'done' ? 'completed' : 'needsAction',
-        due: task.dueDate || undefined,
-      };
-      
-      const method = task.googleTaskId ? 'PUT' : 'POST';
-      const url = task.googleTaskId
-        ? `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${task.googleTaskId}`
-        : `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`;
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 
-          'Authorization': `Bearer ${googleAccessToken}`, 
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify(gTask)
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        updateTask(task.id, { 
-          googleTaskId: data.id,
-          googleTaskListId: taskListId 
-        });
-        addToast('Synced to Google Tasks!', 'success');
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to sync:', errorText);
-        addToast('Failed to sync to Google Tasks.', 'error');
-      }
-    } catch (error) {
-      console.error('Sync error:', error);
-      addToast('Failed to sync to Google Tasks.', 'error');
-    }
-  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
@@ -510,13 +447,7 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
           </div>
         </div>
 
-        <div className="p-4 border-t border-app-surface bg-app-bg/50 flex justify-between items-center">
-          <div className="flex gap-2">
-            <button onClick={handleSyncToGoogleTasks} className="flex items-center gap-2 text-app-muted hover:text-app-primary transition-colors px-2 py-1 rounded-lg hover:bg-app-primary/10">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">Sync to Google Tasks</span>
-            </button>
-          </div>
+        <div className="p-4 border-t border-app-surface bg-app-bg/50 flex justify-end items-center">
           {isDeleting ? (
             <div className="flex items-center gap-2 w-full">
               <span className="text-sm text-red-500 font-medium flex-1">Are you sure?</span>

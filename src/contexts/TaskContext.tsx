@@ -6,68 +6,8 @@ import { addToSyncQueue, getSyncQueue, removeFromSyncQueue } from '../lib/idb';
 import { Attachment } from '../lib/storage';
 import { scheduleTaskNotification, scheduleRoutineNotification, cancelNotification, restoreNotifications } from '../lib/notificationScheduler';
 import { recordCompletion } from '../lib/habitTrackingFirestore';
-import { syncTaskToCalendar, updateCalendarEvent } from '../lib/googleApi';
 
-// Helper function to sync task updates to Google Tasks
-const syncTaskToGoogleTasks = async (task: TodoTask) => {
-  try {
-    const token = localStorage.getItem('flowforge_google_token');
-    if (!token) {
-      console.log('No Google token available for sync');
-      return;
-    }
-    if (!task.googleTaskId || !task.googleTaskListId) {
-      console.log('Task has no googleTaskId, skipping sync');
-      return;
-    }
-    
-    const gTask: any = {
-      title: task.title,
-      notes: task.description || '',
-      status: task.status === 'done' ? 'completed' : 'needsAction',
-      due: task.dueDate || undefined,
-    };
-    
-    if (task.status === 'done' && task.completedAt) {
-      gTask.completed = new Date(task.completedAt).toISOString();
-    }
-    
-    console.log('Syncing task to Google Tasks:', task.title, 'Status:', task.status);
-    
-    const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${task.googleTaskListId}/tasks/${task.googleTaskId}`, {
-      method: 'PATCH',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify(gTask)
-    });
-    
-    if (response.ok) {
-      console.log('Successfully synced task to Google Tasks');
-    } else {
-      const errorText = await response.text();
-      console.error('Failed to sync to Google Tasks:', response.status, errorText);
-    }
-  } catch (error) {
-    console.error('Failed to sync task to Google Tasks:', error);
-  }
-};
 
-// Helper function to delete from Google Tasks
-const deleteFromGoogleTasks = async (googleTaskId: string, googleTaskListId: string) => {
-  try {
-    const token = localStorage.getItem('flowforge_google_token');
-    if (!token) return;
-    
-    await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${googleTaskListId}/tasks/${googleTaskId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-  } catch (error) {
-    console.error('Failed to delete from Google Tasks:', error);
-  }
-};
 
 export interface Subtask {
   id: string;
@@ -279,62 +219,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isOnline) {
       try {
         await setDoc(doc(db, 'tasks', newTask.id), newTask);
-        
-        // Auto-create in Google Tasks if token exists and it's a task
-        if (isTodoTask(newTask)) {
-          const token = localStorage.getItem('flowforge_google_token');
-          if (token) {
-            let taskListId = localStorage.getItem('flowforge_google_tasklist_id');
-            
-            if (!taskListId) {
-              const listsRes = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (listsRes.ok) {
-                const listsData = await listsRes.json();
-                taskListId = listsData.items?.[0]?.id || '';
-                if (taskListId) localStorage.setItem('flowforge_google_tasklist_id', taskListId);
-              }
-            }
-            
-            if (taskListId) {
-              const gTask: any = {
-                title: newTask.title,
-                notes: newTask.description || '',
-                status: newTask.status === 'done' ? 'completed' : 'needsAction',
-                due: newTask.dueDate || undefined,
-              };
-              
-              if (newTask.status === 'done' && newTask.completedAt) {
-                gTask.completed = new Date(newTask.completedAt).toISOString();
-              }
-              
-              const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(gTask)
-              });
-              
-              if (response.ok) {
-                const data = await response.json();
-                await updateDoc(doc(db, 'tasks', newTask.id), { googleTaskId: data.id, googleTaskListId: taskListId });
-                console.log('Auto-created task in Google Tasks:', data.id);
-              }
-            }
-          }
-        }
-        
-        // Auto-create Google Calendar event if task has dueDate and token exists
-        if (isTodoTask(newTask) && newTask.dueDate) {
-          const token = localStorage.getItem('flowforge_google_token');
-          if (token) {
-            const calendarEventId = await syncTaskToCalendar(newTask, token);
-            if (calendarEventId) {
-              await updateDoc(doc(db, 'tasks', newTask.id), { calendarEventId });
-              console.log('Auto-created calendar event:', calendarEventId);
-            }
-          }
-        }
       } catch (e) {
         console.error('Failed to create task', e);
         await addToSyncQueue('ADD', 'tasks', newTask);
@@ -403,22 +287,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
-    // Sync to Google Tasks if task has googleTaskId (non-blocking)
-    if (isTodoTask(updatedTask) && updatedTask.googleTaskId && updatedTask.googleTaskListId) {
-      syncTaskToGoogleTasks(updatedTask).catch(console.error);
-    }
-    
-    // Sync to Google Calendar when task is marked done
-    if (updates.status === 'done' && isTodoTask(updatedTask) && updatedTask.calendarEventId) {
-      const token = localStorage.getItem('flowforge_google_token');
-      if (token) {
-        updateCalendarEvent(updatedTask.calendarEventId, {
-          summary: `✅ ${updatedTask.title}`,
-          colorId: "2"
-        }, token).catch(console.error);
-      }
-    }
-    
     if (isOnline) {
       try {
         await updateDoc(doc(db, 'tasks', id), finalUpdates);
@@ -472,14 +340,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteTask = async (id: string) => {
-    const taskToDelete = tasks.find(t => t.id === id);
     setTasks(prev => prev.filter(t => t.id !== id));
     cancelNotification(id);
-    
-    // Delete from Google Tasks if it has googleTaskId (non-blocking)
-    if (taskToDelete && isTodoTask(taskToDelete) && taskToDelete.googleTaskId && taskToDelete.googleTaskListId) {
-      deleteFromGoogleTasks(taskToDelete.googleTaskId, taskToDelete.googleTaskListId).catch(console.error);
-    }
     
     if (isOnline) {
       try {
