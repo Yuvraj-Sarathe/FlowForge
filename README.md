@@ -13,7 +13,7 @@
   <img src="public/icon-512.png" alt="FlowForge Logo" width="120" height="120">
 </a>
 
-**[✨ Try FlowForge Now](https://flowforge-f5e99.web.app)** • **[📖 Documentation](#features)** • **[🐛 Report Bug](https://github.com/Mikky-mlh/FlowForge/issues)**
+**[✨ Try FlowForge Now](https://flowforge-f5e99.web.app)** • **[📖 Documentation](#features)** • **[🐛 Report Bug](https://github.com/Yuvraj-Sarathe/FlowForge/issues)**
 
 ---
 
@@ -304,8 +304,8 @@ MIT License - feel free to use this project for personal or commercial purposes.
 
 **Yuvraj Sarathe**
 
-- GitHub: [@Mikky-mlh](https://github.com/Mikky-mlh)
-- Project: [FlowForge](https://github.com/Mikky-mlh/FlowForge)
+- GitHub: [@Yuvraj-Sarathe](https://github.com/Yuvraj-Sarathe)
+- Project: [FlowForge](https://github.com/Yuvraj-Sarathe/FlowForge)
 
 ---
 
