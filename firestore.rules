@@ -61,7 +61,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      // Allow reading user documents for device linking verification
+      // Users can query by syncId to verify codes exist
+      allow read: if isOwner(userId) || request.query.limit <= 1;
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
       allow update: if isOwner(userId) && isValidUser(request.resource.data);
       allow delete: if isOwner(userId);
