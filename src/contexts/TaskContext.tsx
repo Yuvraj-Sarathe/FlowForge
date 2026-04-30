@@ -143,11 +143,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const q = query(collection(db, 'tasks'), where('syncId', '==', syncId));
-    const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
-      // Only update state from confirmed server data, not local pending writes
-      // This prevents the flash where optimistic state gets overwritten
-      if (snapshot.metadata.hasPendingWrites) return;
-      
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const tasksData: Task[] = [];
       snapshot.forEach((docSnap) => {
         const data = docSnap.data() as any;
@@ -165,9 +161,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const sortedTasks = tasksData.sort((a, b) => b.createdAt - a.createdAt);
       setTasks(sortedTasks);
       setIsFirestoreOffline(false);
-      
-      // Restore notifications after tasks are loaded
-      restoreNotifications(sortedTasks);
     }, (error) => {
       console.error('Firestore listen error:', error);
       if (error.code === 'unavailable') {
@@ -177,6 +170,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return unsubscribe;
   }, [syncId]);
+
+  // Restore notifications only once when tasks are initially loaded
+  useEffect(() => {
+    if (tasks.length > 0) {
+      restoreNotifications(tasks);
+    }
+  }, [syncId]); // Only run when syncId changes, not on every task update
 
   const addTask = async (taskData: Omit<Task, 'id' | 'syncId' | 'createdAt' | 'lastModified'>) => {
     if (!syncId) return;
@@ -266,9 +266,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
+    console.log('updateTask called:', { id, updates, finalUpdates });
+    
     const isCompletingRecurring = currentTask?.status !== 'done' && updates.status === 'done' && isTodoTask(currentTask) && currentTask.recurring;
     
     const updatedTask = { ...currentTask, ...finalUpdates } as Task;
+    console.log('updatedTask:', updatedTask);
     setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
     
     // Record habit completion for routines
@@ -289,7 +292,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (isOnline) {
       try {
+        console.log('Updating Firestore with:', finalUpdates);
         await updateDoc(doc(db, 'tasks', id), finalUpdates);
+        console.log('Firestore update successful');
         
         // If completing a recurring task, create the next instance
         if (isCompletingRecurring && currentTask && isTodoTask(currentTask)) {

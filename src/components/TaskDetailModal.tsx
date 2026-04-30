@@ -43,15 +43,22 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
       return;
     }
 
+    console.log('Starting file upload:', { fileName: file.name, fileSize: file.size, syncId, taskId: task.id });
     setIsUploading(true);
     try {
       const attachment = await uploadAttachment(file, syncId, task.id);
+      console.log('File uploaded successfully:', attachment);
       const currentAttachments = task.attachments || [];
-      updateTask(task.id, {
+      console.log('Current attachments:', currentAttachments);
+      console.log('Updating task with new attachments:', [...currentAttachments, attachment]);
+      await updateTask(task.id, {
         attachments: [...currentAttachments, attachment],
       });
+      console.log('Task updated successfully');
+      addToast('File uploaded successfully', 'success');
     } catch (error) {
       console.error('Failed to upload file:', error);
+      addToast(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -359,7 +366,7 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
             <h3 className="text-xs uppercase tracking-[0.1em] font-bold text-app-muted mb-2 block">Attachments</h3>
             <div className="space-y-2 mb-3">
               {(task.attachments || []).map(attachment => (
-                <div key={attachment.id} className="flex items-center gap-3 p-2 bg-app-surface rounded-lg group">
+                <div key={attachment.id} className="flex items-center gap-3 p-2 bg-app-surface rounded-lg group hover:bg-app-border/50 transition-colors">
                   {isImageFile(attachment.type) ? (
                     <img src={attachment.url} alt={attachment.name} className="w-10 h-10 object-cover rounded" />
                   ) : (
@@ -367,20 +374,18 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
                       <Paperclip className="w-5 h-5 text-app-muted" />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-app-text truncate">{attachment.name}</p>
+                  <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 cursor-pointer">
+                    <p className="text-sm text-app-text truncate hover:text-app-primary transition-colors">{attachment.name}</p>
                     <p className="text-xs text-app-muted">{formatFileSize(attachment.size)}</p>
-                  </div>
+                  </a>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {isImageFile(attachment.type) && (
-                      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="p-1 text-app-muted hover:text-app-primary">
-                        <Eye className="w-4 h-4" />
-                      </a>
-                    )}
-                    <a href={attachment.url} download className="p-1 text-app-muted hover:text-app-primary">
+                    <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="p-1 text-app-muted hover:text-app-primary" title="Open">
+                      <Eye className="w-4 h-4" />
+                    </a>
+                    <a href={attachment.url} download className="p-1 text-app-muted hover:text-app-primary" title="Download">
                       <DownloadSimple className="w-4 h-4" />
                     </a>
-                    <button onClick={() => handleRemoveAttachment(attachment)} className="p-1 text-app-muted hover:text-red-500">
+                    <button onClick={() => handleRemoveAttachment(attachment)} className="p-1 text-app-muted hover:text-red-500" title="Delete">
                       <Trash className="w-4 h-4" />
                     </button>
                   </div>

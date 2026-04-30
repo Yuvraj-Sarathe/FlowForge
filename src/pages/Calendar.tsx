@@ -29,6 +29,23 @@ export const CalendarPage: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  const weekStart = startOfWeek(currentDate);
+  const weekEnd = endOfWeek(currentDate);
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const dayStart = startOfDay(currentDate);
+  const dayEnd = endOfDay(currentDate);
+
+  const upcomingTasks = useMemo(() => tasks.filter(isTodoTask).filter(t => t.dueDate && (!isPast(new Date(t.dueDate)) || t.status !== 'done')).sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()).slice(0, 10), [tasks]);
+
+  const stats = useMemo(() => ({ total: tasks.filter(isTodoTask).filter(t => t.dueDate).length, completed: tasks.filter(isTodoTask).filter(t => t.dueDate && t.status === 'done').length, upcoming: upcomingTasks.length }), [tasks, upcomingTasks]);
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
@@ -58,23 +75,6 @@ export const CalendarPage: React.FC = () => {
   const navigateDay = (dir: 'prev' | 'next') => setCurrentDate(dir === 'prev' ? addDays(currentDate, -1) : addDays(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null;
-
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-
-  const weekStart = startOfWeek(currentDate);
-  const weekEnd = endOfWeek(currentDate);
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  const dayStart = startOfDay(currentDate);
-  const dayEnd = endOfDay(currentDate);
-
-  const upcomingTasks = useMemo(() => tasks.filter(isTodoTask).filter(t => t.dueDate && (!isPast(new Date(t.dueDate)) || t.status !== 'done')).sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()).slice(0, 10), [tasks]);
-
-  const stats = useMemo(() => ({ total: tasks.filter(isTodoTask).filter(t => t.dueDate).length, completed: tasks.filter(isTodoTask).filter(t => t.dueDate && t.status === 'done').length, upcoming: upcomingTasks.length }), [tasks, upcomingTasks]);
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-[100dvh]">

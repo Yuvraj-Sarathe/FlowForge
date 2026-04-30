@@ -77,6 +77,11 @@ export const KanbanPage: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+  const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null;
+  const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
@@ -85,8 +90,6 @@ export const KanbanPage: React.FC = () => {
   if (isLoading) {
     return <KanbanSkeleton />;
   }
-
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
   const getTasksByStatus = (status: string) => {
     return tasks
@@ -114,8 +117,6 @@ export const KanbanPage: React.FC = () => {
         return b.createdAt - a.createdAt;
       });
   };
-  const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null;
-  const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
 
   const handleDragStart = (event: DragStartEvent) => setActiveId(event.active.id as string);
   const handleDragEnd = (event: DragEndEvent) => {

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarBlank, Tag, Flag, Repeat, Link, ListChecks, Plus, Paperclip, Bell } from '@phosphor-icons/react';
 import { useTasks } from '../contexts/TaskContext';
 import { sanitizeTitle, sanitizeTags } from '../lib/sanitize';
 import { TimePicker } from './TimePicker';
+import { uploadAttachment, Attachment } from '../lib/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -12,6 +15,8 @@ interface CreateTaskModalProps {
 
 export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose }) => {
   const { addTask } = useTasks();
+  const { syncId } = useAuth();
+  const { addToast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -27,8 +32,10 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
   const [dependentTask, setDependentTask] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
-  const [attachments, setAttachments] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +67,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
       })),
       dependentTaskId: dependentTask.trim() || undefined,
       notificationsEnabled,
+      attachments: attachments.length > 0 ? attachments : undefined,
     });
 
     resetForm();
@@ -112,21 +120,33 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setAttachments(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !syncId) {
+      if (!syncId) {
+        addToast('Please sign in to upload attachments', 'error');
+      }
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Generate temporary task ID for upload
+      const tempTaskId = crypto.randomUUID();
+      const attachment = await uploadAttachment(file, syncId, tempTaskId);
+      setAttachments(prev => [...prev, attachment]);
+      addToast('File uploaded successfully', 'success');
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      addToast(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+  const removeAttachment = (attachment: Attachment) => {
+    setAttachments(prev => prev.filter(a => a.id !== attachment.id));
   };
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -218,17 +238,26 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               </label>
               <input
                 type="file"
-                multiple
+                ref={fileInputRef}
                 onChange={handleFileUpload}
-                className="w-full text-sm text-app-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-app-primary/10 file:text-app-primary hover:file:bg-app-primary/20 transition-all cursor-pointer"
+                className="hidden"
+                accept="image/*,.pdf,.doc,.docx,.txt"
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-full text-sm text-app-muted hover:text-app-primary bg-app-surface border border-app-border rounded-xl px-4 py-3 transition-colors disabled:opacity-50 text-left"
+              >
+                {isUploading ? 'Uploading...' : 'Choose file to upload'}
+              </button>
               {attachments.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  {attachments.map((attachment, index) => (
-                    <div key={index} className="flex items-center gap-2 px-3 py-2 bg-app-surface rounded-lg">
+                  {attachments.map((attachment) => (
+                    <div key={attachment.id} className="flex items-center gap-2 px-3 py-2 bg-app-surface rounded-lg">
                       <Paperclip className="w-4 h-4 text-app-muted" />
-                      <span className="flex-1 text-sm text-app-text truncate">Attachment {index + 1}</span>
-                      <button type="button" onClick={() => removeAttachment(index)} className="text-app-muted hover:text-red-500">
+                      <span className="flex-1 text-sm text-app-text truncate">{attachment.name}</span>
+                      <button type="button" onClick={() => removeAttachment(attachment)} className="text-app-muted hover:text-red-500">
                         <X className="w-4 h-4" />
                       </button>
                     </div>

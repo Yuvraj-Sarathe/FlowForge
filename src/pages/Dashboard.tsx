@@ -155,18 +155,6 @@ export const Dashboard: React.FC = () => {
   const searchRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Show skeleton for initial load
-  React.useEffect(() => {
-    if (syncId) {
-      const timer = setTimeout(() => setIsLoading(false), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [syncId]);
-
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
-
   const allTags = useMemo(() => { const tags = new Set<string>(); tasks.forEach(t => t.tags?.forEach(tag => tags.add(tag))); return Array.from(tags); }, [tasks]);
   const filteredAndSortedTasks = useMemo(() => {
     let result = [...tasks];
@@ -198,6 +186,18 @@ export const Dashboard: React.FC = () => {
     const now = new Date(); const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); const startOfWeek = startOfToday - (now.getDay() * 24 * 60 * 60 * 1000);
     return { completedToday: tasks.filter(t => t.status === 'done' && t.completedAt && t.completedAt >= startOfToday).length, completedThisWeek: tasks.filter(t => t.status === 'done' && t.completedAt && t.completedAt >= startOfWeek).length, createdThisWeek: tasks.filter(t => t.createdAt >= startOfWeek).length };
   }, [tasks]);
+
+  // Show skeleton for initial load
+  React.useEffect(() => {
+    if (syncId) {
+      const timer = setTimeout(() => setIsLoading(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [syncId]);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-[100dvh]">

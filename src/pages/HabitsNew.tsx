@@ -33,14 +33,23 @@ export const HabitsPage: React.FC = () => {
   const [weeklyProgressMap, setWeeklyProgressMap] = React.useState<Map<string, boolean[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
+  const weekStart = startOfWeek(new Date());
+  const weekEnd = endOfWeek(new Date());
+  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const stats = useMemo(() => {
+    const totalRoutines = routines.length;
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const completedToday = routines.filter(r => r.status === 'done' && r.completedAt && format(new Date(r.completedAt), 'yyyy-MM-dd') === todayKey).length;
+    const totalStreaks = Array.from(habitStatsMap.values()).reduce((sum, s) => sum + s.currentStreak, 0);
+    const longestStreak = Math.max(...Array.from(habitStatsMap.values()).map(s => s.longestStreak), 0);
+    return { totalRoutines, completedToday, totalStreaks, longestStreak };
+  }, [routines, habitStatsMap]);
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
-
-  if (isLoading) {
-    return <HabitsSkeleton />;
-  }
 
   // Load habit stats from Firestore
   React.useEffect(() => {
@@ -68,18 +77,9 @@ export const HabitsPage: React.FC = () => {
     loadStats();
   }, [routines, syncId]);
 
-  const weekStart = startOfWeek(new Date());
-  const weekEnd = endOfWeek(new Date());
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  const stats = useMemo(() => {
-    const totalRoutines = routines.length;
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
-    const completedToday = routines.filter(r => r.status === 'done' && r.completedAt && format(new Date(r.completedAt), 'yyyy-MM-dd') === todayKey).length;
-    const totalStreaks = Array.from(habitStatsMap.values()).reduce((sum, s) => sum + s.currentStreak, 0);
-    const longestStreak = Math.max(...Array.from(habitStatsMap.values()).map(s => s.longestStreak), 0);
-    return { totalRoutines, completedToday, totalStreaks, longestStreak };
-  }, [routines, habitStatsMap]);
+  if (isLoading) {
+    return <HabitsSkeleton />;
+  }
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-[100dvh]">
