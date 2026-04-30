@@ -157,7 +157,7 @@ export const Layout: React.FC = () => {
               <p className="text-app-muted">Built with ❤️ by Yuvraj Sarathe</p>
               <div className="flex items-center gap-4">
                 <a 
-                  href="https://github.com/Mikky-mlh" 
+                  href="https://github.com/Yuvraj-Sarathe" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-app-muted hover:text-app-primary transition-colors flex items-center gap-2"
