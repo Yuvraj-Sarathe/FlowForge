@@ -121,18 +121,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setDeviceLinkError(null);
     
     try {
-      // Query Firestore to verify this syncId exists
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('syncId', '==', normalizedCode));
-      const querySnapshot = await getDocs(q);
+      // Check if handshake document exists with this code
+      const handshakeDoc = await getDoc(doc(db, 'handshakes', normalizedCode));
       
-      if (querySnapshot.empty) {
+      if (!handshakeDoc.exists()) {
         throw new Error('Invalid sync code. Please check and try again.');
       }
       
+      // Get the syncId from the handshake document
+      const syncIdFromHandshake = handshakeDoc.data().syncId;
+      
+      if (!syncIdFromHandshake) {
+        throw new Error('Invalid handshake data.');
+      }
+      
       // Sync code is valid - save to localStorage
-      localStorage.setItem('flowforge_sync_id', normalizedCode);
-      setSyncId(normalizedCode);
+      localStorage.setItem('flowforge_sync_id', syncIdFromHandshake);
+      setSyncId(syncIdFromHandshake);
       return true;
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to link device';

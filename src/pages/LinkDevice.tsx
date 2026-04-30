@@ -1,15 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { motion } from 'framer-motion';
 import { QrCode, Scan, GoogleLogo } from '@phosphor-icons/react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export const LinkDevice: React.FC = () => {
   const { user, syncId, signIn, linkDevice, error: authError, deviceLinkError, deviceLinkLoading } = useAuth();
   const [mode, setMode] = useState<'show' | 'scan'>('show');
   const [manualCode, setManualCode] = useState('');
   const [linkError, setLinkError] = useState<string | null>(null);
+
+  // Create handshake document when user has a syncId
+  useEffect(() => {
+    if (syncId) {
+      const createHandshake = async () => {
+        try {
+          // Create/update handshake document with the syncId as the document ID
+          await setDoc(doc(db, 'handshakes', syncId), {
+            syncId: syncId,
+            createdAt: Date.now(),
+          });
+        } catch (error) {
+          console.error('Failed to create handshake:', error);
+        }
+      };
+      createHandshake();
+    }
+  }, [syncId]);
 
   const handleScan = async (result: string) => {
     try {
