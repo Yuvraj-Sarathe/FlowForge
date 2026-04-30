@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Circle, Flame, Calendar, TrendUp } from '@phosphor-icons/react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
@@ -8,6 +6,7 @@ import { InfoCard } from '../components/InfoCard';
 import { useTasks, isRoutine } from '../contexts/TaskContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getHabitStats, getWeeklyProgress } from '../lib/habitTrackingFirestore';
+import { HabitsSkeleton } from '../components/SkeletonLoader';
 
 function BentoCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-app-card border border-app-border/30 rounded-2xl ${className}`}>{children}</motion.div>;
@@ -32,6 +31,16 @@ export const HabitsPage: React.FC = () => {
   const routines = useMemo(() => tasks.filter(isRoutine), [tasks]);
   const [habitStatsMap, setHabitStatsMap] = React.useState<Map<string, any>>(new Map());
   const [weeklyProgressMap, setWeeklyProgressMap] = React.useState<Map<string, boolean[]>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <HabitsSkeleton />;
+  }
 
   // Load habit stats from Firestore
   React.useEffect(() => {

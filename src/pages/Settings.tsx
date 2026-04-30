@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { exportTasksAsJSON, exportTasksAsCSV, exportTasksAsMarkdown, downloadFile, readFileAsText } from '../lib/exportImport';
 import { WorkScheduleSettings } from '../components/WorkScheduleSettings';
 import { NotificationSettings } from '../components/NotificationSettings';
+import { SettingsSkeleton } from '../components/SkeletonLoader';
 
 function BentoCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-app-card border border-app-border/30 rounded-2xl p-6 ${className}`}>{children}</motion.div>;
@@ -17,6 +18,16 @@ export const Settings: React.FC = () => {
   const { tasks } = useTasks();
   const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <SettingsSkeleton />;
+  }
 
   const handleColorChange = (key: keyof typeof theme, value: string) => {
     updateTheme({ [key]: value });

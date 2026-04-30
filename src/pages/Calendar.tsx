@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useMemo } from 'react';
 import { useTasks, Task, isRoutine, isTodoTask } from '../contexts/TaskContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +5,7 @@ import { CaretLeft, CaretRight, Calendar, List, Clock, CheckCircle, Circle } fro
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, isPast, startOfDay, endOfDay, addDays } from 'date-fns';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { InfoCard } from '../components/InfoCard';
+import { CalendarSkeleton } from '../components/SkeletonLoader';
 
 type ViewMode = 'month' | 'week' | 'day';
 
@@ -28,6 +27,16 @@ export const CalendarPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <CalendarSkeleton />;
+  }
 
   const getTasksForDate = (date: Date): Task[] => {
     const todos = tasks

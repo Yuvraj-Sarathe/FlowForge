@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useMemo, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTasks, Task, TodoTask, isTodoTask } from '../contexts/TaskContext';
@@ -12,6 +10,7 @@ import { TaskDetailModal } from '../components/TaskDetailModal';
 import { InfoCard } from '../components/InfoCard';
 import { CreateTaskModal } from '../components/CreateTaskModal';
 import { CreateRoutineModal } from '../components/CreateRoutineModal';
+import { DashboardSkeleton } from '../components/SkeletonLoader';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { CheckCircle, Circle, CalendarBlank, Tag, MagnifyingGlass, SortAscending, Funnel, List, Clock, Square, CheckSquare, Plus } from '@phosphor-icons/react';
 import { format, isSameDay } from 'date-fns';
@@ -154,6 +153,19 @@ export const Dashboard: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showRoutineModal, setShowRoutineModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Show skeleton for initial load
+  React.useEffect(() => {
+    if (syncId) {
+      const timer = setTimeout(() => setIsLoading(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [syncId]);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   const allTags = useMemo(() => { const tags = new Set<string>(); tasks.forEach(t => t.tags?.forEach(tag => tags.add(tag))); return Array.from(tags); }, [tasks]);
   const filteredAndSortedTasks = useMemo(() => {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Play, Pause, ArrowCounterClockwise, Bell, Gear, CheckCircle } from '@phosphor-icons/react';
 import { useToast } from '../contexts/ToastContext';
 import { useTasks, isTodoTask } from '../contexts/TaskContext';
+import { TimerSkeleton } from './SkeletonLoader';
 
 interface TimerSettings {
   focusDuration: number;
@@ -95,6 +96,16 @@ export const PomodoroTimer: React.FC = () => {
       return DEFAULT_SETTINGS;
     }
   });
+  const [isLoading, setIsLoading] = useState(true);
+  
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <TimerSkeleton />;
+  }
   
   const [state, setState] = useState<TimerState>(() => {
     try {

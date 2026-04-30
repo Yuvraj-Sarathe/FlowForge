@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { useTasks, Task } from '../contexts/TaskContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +7,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Circle, CheckCircle, DotsThree } from '@phosphor-icons/react';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { InfoCard } from '../components/InfoCard';
+import { KanbanSkeleton } from '../components/SkeletonLoader';
 
 interface Column { id: string; title: string; color: string; }
 
@@ -76,6 +75,16 @@ export const KanbanPage: React.FC = () => {
   const { tasks, updateTask } = useTasks();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <KanbanSkeleton />;
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
