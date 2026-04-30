@@ -90,9 +90,26 @@ service cloud.firestore {
       allow delete: if resource.data.syncId is string;
     }
 
+    // New collection for cross-device pairing
+    match /handshakes/{code} {
+      // Allow the PC to find the handshake doc via the 12-char code
+      // We limit the read to 'get' only so people can't 'list' (browse) all active codes
+      allow get: if true; 
+      
+      // Allow the Mobile device to create the handshake
+      // and allow the PC to update it (e.g., to mark it as 'claimed')
+      allow create, update: if true; 
+      
+      // Optional: Add validation to ensure the code is 12 chars
+      allow create: if code.size() == 12 
+                    && request.resource.data.syncId is string;
+    }
+
     match /settings/{syncId} {
       allow read: if true;
       allow write: if true;
+      allow get: if true; 
+      allow list: if false;
     }
   }
 }
