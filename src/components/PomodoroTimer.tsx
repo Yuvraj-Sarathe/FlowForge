@@ -134,7 +134,7 @@ export const PomodoroTimer: React.FC = () => {
   const intervalRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const saveState = useCallback((newState: TimerState) => {
+  const syncState = useCallback((newState: TimerState) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...newState, savedAt: Date.now() }));
     } catch {}
@@ -183,7 +183,7 @@ export const PomodoroTimer: React.FC = () => {
         sessionsCompleted: newSessionsCompleted,
       };
       
-      saveState(newState);
+      syncState(newState);
       return newState;
     });
 
@@ -209,7 +209,7 @@ export const PomodoroTimer: React.FC = () => {
     if (shouldAutoStart) {
       setState(prev => ({ ...prev, isActive: true }));
     }
-  }, [settings, state.mode, notificationPermission, saveState, linkedTaskId, tasks, updateTask]);
+  }, [settings, state.mode, notificationPermission, syncState, linkedTaskId, tasks, updateTask]);
 
   useEffect(() => {
     if (state.isActive && state.timeLeft > 0) {
@@ -220,7 +220,7 @@ export const PomodoroTimer: React.FC = () => {
           }
           const newTimeLeft = prev.timeLeft - 1;
           const newState = { ...prev, timeLeft: newTimeLeft };
-          saveState(newState);
+          syncState(newState);
           return newState;
         });
       }, 1000);
@@ -231,7 +231,7 @@ export const PomodoroTimer: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, saveState]);
+  }, [state.isActive, syncState]);
 
   useEffect(() => {
     if (state.timeLeft === 0 && state.isActive) {
@@ -256,7 +256,7 @@ export const PomodoroTimer: React.FC = () => {
         isActive: false,
         timeLeft: getDuration(prev.mode),
       };
-      saveState(newState);
+      syncState(newState);
       return newState;
     });
   };
@@ -271,7 +271,7 @@ export const PomodoroTimer: React.FC = () => {
                   newMode === 'break' ? settings.breakDuration * 60 :
                   settings.longBreakDuration * 60,
       };
-      saveState(newState);
+      syncState(newState);
       return newState;
     });
   };

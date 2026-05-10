@@ -14,12 +14,12 @@ interface Props {
 
 export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
   const { tasks, updateTask, deleteTask } = useTasks();
-  const { googleAccessToken, syncId } = useAuth();
+  const { syncId } = useAuth();
   const { addToast } = useToast();
   const [newSubtask, setNewSubtask] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [dependentTasksToPrompt, setDependentTasksToPrompt] = useState<Task[] | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(task.dueDate ? new Date(task.dueDate) : new Date());
@@ -31,48 +31,35 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
     return '09:00';
   });
 
-  // Auto-sync is handled by TaskContext automatically
-  // No need for manual debouncing here
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !syncId) {
-      if (!syncId) {
-        addToast('Please sign in to upload attachments', 'error');
-      }
+      if (!syncId) addToast('Please sign in to upload attachments', 'error');
       return;
     }
 
-    console.log('Starting file upload:', { fileName: file.name, fileSize: file.size, syncId, taskId: task.id });
-    setIsUploading(true);
+    setUploading(true);
     try {
       const attachment = await uploadAttachment(file, syncId, task.id);
-      console.log('File uploaded successfully:', attachment);
-      const currentAttachments = task.attachments || [];
-      console.log('Current attachments:', currentAttachments);
-      console.log('Updating task with new attachments:', [...currentAttachments, attachment]);
       await updateTask(task.id, {
-        attachments: [...currentAttachments, attachment],
+        attachments: [...(task.attachments || []), attachment],
       });
-      console.log('Task updated successfully');
       addToast('File uploaded successfully', 'success');
     } catch (error) {
-      console.error('Failed to upload file:', error);
-      addToast(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      addToast(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     } finally {
-      setIsUploading(false);
+      setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleRemoveAttachment = (attachment: Attachment) => {
-    const currentAttachments = task.attachments || [];
+  const deleteAttachment = (attachment: Attachment) => {
     updateTask(task.id, {
-      attachments: currentAttachments.filter(a => a.id !== attachment.id),
+      attachments: (task.attachments || []).filter(a => a.id !== attachment.id),
     });
   };
 
-  const handleAddSubtask = (e: React.FormEvent) => {
+  const addSubtask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubtask.trim()) return;
     
@@ -108,13 +95,11 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
 
     if (newlyDone) {
       const deps = tasks.filter(t => t.dependentTaskId === task.id && t.status !== 'done');
-      if (deps.length > 0) {
-        setDependentTasksToPrompt(deps);
-      }
+      if (deps.length > 0) setDependentTasksToPrompt(deps);
     }
   };
 
-  const handleDelete = () => {
+  const removeTask = () => {
     deleteTask(task.id);
     onClose();
   };
@@ -385,7 +370,7 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
                     <a href={attachment.url} download className="p-1 text-app-muted hover:text-app-primary" title="Download">
                       <DownloadSimple className="w-4 h-4" />
                     </a>
-                    <button onClick={() => handleRemoveAttachment(attachment)} className="p-1 text-app-muted hover:text-red-500" title="Delete">
+                    <button onClick={() => deleteAttachment(attachment)} className="p-1 text-app-muted hover:text-red-500" title="Delete">
                       <Trash className="w-4 h-4" />
                     </button>
                   </div>
@@ -395,17 +380,17 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
             <input
               type="file"
               ref={fileInputRef}
-              onChange={handleFileUpload}
+              onChange={uploadFile}
               className="hidden"
               accept="image/*,.pdf,.doc,.docx,.txt"
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={uploading}
               className="flex items-center gap-2 px-3 py-2 text-sm text-app-muted hover:text-app-primary bg-app-surface rounded-lg transition-colors disabled:opacity-50"
             >
               <Paperclip className="w-4 h-4" />
-              {isUploading ? 'Uploading...' : 'Add Attachment'}
+              {uploading ? 'Uploading...' : 'Add Attachment'}
             </button>
           </div>
 
@@ -433,7 +418,7 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
               )}
             </div>
 
-            <form onSubmit={handleAddSubtask} className="flex gap-2">
+            <form onSubmit={addSubtask} className="flex gap-2">
               <input 
                 type="text" 
                 value={newSubtask}
@@ -453,14 +438,14 @@ export const TaskDetailModal: React.FC<Props> = ({ task, onClose }) => {
         </div>
 
         <div className="p-4 border-t border-app-surface bg-app-bg/50 flex justify-end items-center">
-          {isDeleting ? (
+          {confirmDelete ? (
             <div className="flex items-center gap-2 w-full">
               <span className="text-sm text-red-500 font-medium flex-1">Are you sure?</span>
-              <button onClick={() => setIsDeleting(false)} className="px-3 py-1.5 text-sm font-medium text-app-text hover:bg-app-surface rounded-lg transition-colors">Cancel</button>
-              <button onClick={handleDelete} className="px-3 py-1.5 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">Delete</button>
+              <button onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 text-sm font-medium text-app-text hover:bg-app-surface rounded-lg transition-colors">Cancel</button>
+              <button onClick={removeTask} className="px-3 py-1.5 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">Delete</button>
             </div>
           ) : (
-            <button onClick={() => setIsDeleting(true)} className="flex items-center gap-2 text-app-muted hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10">
+            <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-2 text-app-muted hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10">
               <Trash className="w-4 h-4" />
               <span className="text-sm font-medium">Delete Task</span>
             </button>

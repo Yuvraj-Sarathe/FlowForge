@@ -120,7 +120,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
     );
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !syncId) {
       if (!syncId) {
@@ -131,21 +131,20 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
 
     setIsUploading(true);
     try {
-      // Generate temporary task ID for upload
-      const tempTaskId = crypto.randomUUID();
-      const attachment = await uploadAttachment(file, syncId, tempTaskId);
+      const tempId = crypto.randomUUID();
+      const attachment = await uploadAttachment(file, syncId, tempId);
       setAttachments(prev => [...prev, attachment]);
       addToast('File uploaded successfully', 'success');
     } catch (error) {
-      console.error('Failed to upload file:', error);
-      addToast(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      console.error('Upload failed:', error);
+      addToast(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const removeAttachment = (attachment: Attachment) => {
+  const deleteAttachment = (attachment: Attachment) => {
     setAttachments(prev => prev.filter(a => a.id !== attachment.id));
   };
 
@@ -239,7 +238,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
               <input
                 type="file"
                 ref={fileInputRef}
-                onChange={handleFileUpload}
+                onChange={uploadFile}
                 className="hidden"
                 accept="image/*,.pdf,.doc,.docx,.txt"
               />
@@ -257,7 +256,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClos
                     <div key={attachment.id} className="flex items-center gap-2 px-3 py-2 bg-app-surface rounded-lg">
                       <Paperclip className="w-4 h-4 text-app-muted" />
                       <span className="flex-1 text-sm text-app-text truncate">{attachment.name}</span>
-                      <button type="button" onClick={() => removeAttachment(attachment)} className="text-app-muted hover:text-red-500">
+                      <button type="button" onClick={() => deleteAttachment(attachment)} className="text-app-muted hover:text-red-500">
                         <X className="w-4 h-4" />
                       </button>
                     </div>

@@ -119,7 +119,7 @@ body[data-has-bg="true"] .bg-app-surface {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Premium Custom Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -150,7 +150,7 @@ body[data-has-bg="true"] .bg-app-surface {
   color: var(--app-primary-fg);
 }
 
-/* Tiptap Editor Styles */
+/* Editor */
 .ProseMirror {
   outline: none;
 }
@@ -163,7 +163,7 @@ body[data-has-bg="true"] .bg-app-surface {
   pointer-events: none;
 }
 
-/* Utility for liquid glass effect */
+/* Cards */
 .glass-panel {
   background: var(--app-card);
   border: 1px solid var(--glass-border);
@@ -171,18 +171,16 @@ body[data-has-bg="true"] .bg-app-surface {
   backdrop-filter: blur(12px);
 }
 
-/* Diffusion shadow for cards */
 .diffusion-shadow {
   box-shadow: var(--shadow-diffusion);
 }
 
-/* Spring animation base */
+/* Transitions */
 .spring-transition {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
               opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Magnetic button cursor */
 .magnetic-cursor {
   cursor: grab;
 }
@@ -191,7 +189,7 @@ body[data-has-bg="true"] .bg-app-surface {
   cursor: grabbing;
 }
 
-/* Range slider styling */
+/* Slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -242,7 +240,7 @@ input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.1);
 }
 
-/* Custom Toast Notifications */
+/* Toast */
 .toast-container {
   position: fixed;
   bottom: 24px;
@@ -256,7 +254,7 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .custom-toast {
   background: var(--app-card);
-  color: var(--app-text);
+  color: var(--text);
   padding: 14px 24px;
   border-radius: 8px;
   font-weight: 500;

@@ -9,31 +9,38 @@ interface InfoCardProps {
   tips?: string[];
 }
 
+const slideAnimation = {
+  hidden: { opacity: 0, y: -20 },
+  show: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 }
+};
+
 export const InfoCard: React.FC<InfoCardProps> = ({ id, title, description, tips }) => {
-  const [show, setShow] = useState(false);
-  const storageKey = `flowforge_info_${id}`;
+  const [visible, setVisible] = useState(false);
+  const dismissedKey = `flowforge_info_${id}`;
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(storageKey);
-    if (!dismissed) setShow(true);
-  }, [storageKey]);
+    if (!localStorage.getItem(dismissedKey)) {
+      setVisible(true);
+    }
+  }, [dismissedKey]);
 
-  const handleDismiss = () => {
-    localStorage.setItem(storageKey, 'true');
-    setShow(false);
+  const dismiss = () => {
+    localStorage.setItem(dismissedKey, 'true');
+    setVisible(false);
   };
 
   return (
     <AnimatePresence>
-      {show && (
+      {visible && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+          initial={slideAnimation.hidden}
+          animate={slideAnimation.show}
+          exit={slideAnimation.exit}
           className="mb-6 bg-gradient-to-br from-app-primary/10 to-emerald-500/5 border border-app-primary/20 rounded-2xl p-6 relative"
         >
           <button
-            onClick={handleDismiss}
+            onClick={dismiss}
             className="absolute top-4 right-4 text-app-muted hover:text-app-text transition-colors"
           >
             <X className="w-5 h-5" />

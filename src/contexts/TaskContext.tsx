@@ -244,34 +244,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const currentTask = tasks.find(t => t.id === id);
     
-    // Strip out invalid fields based on current task type
-    if (currentTask) {
-      if (currentTask.type === 'routine') {
-        // Remove task-specific fields from routine updates
-        delete finalUpdates.dueDate;
-        delete finalUpdates.duration;
-        delete finalUpdates.recurring;
-        delete finalUpdates.recurrenceRule;
-        delete finalUpdates.customRecurrenceDays;
-        delete finalUpdates.recurrenceEnd;
-        delete finalUpdates.parentTaskId;
-        delete finalUpdates.dependentTaskId;
-        delete finalUpdates.calendarEventId;
-        delete finalUpdates.googleTaskId;
-        delete finalUpdates.googleTaskListId;
-      } else if (currentTask.type === 'task') {
-        // Remove routine-specific fields from task updates
-        delete finalUpdates.scheduleTime;
-        delete finalUpdates.routineType;
-      }
-    }
-    
-    console.log('updateTask called:', { id, updates, finalUpdates });
-    
     const isCompletingRecurring = currentTask?.status !== 'done' && updates.status === 'done' && isTodoTask(currentTask) && currentTask.recurring;
     
     const updatedTask = { ...currentTask, ...finalUpdates } as Task;
-    console.log('updatedTask:', updatedTask);
     setTasks(prev => prev.map(t => t.id === id ? updatedTask : t));
     
     // Record habit completion for routines
@@ -292,9 +267,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (isOnline) {
       try {
-        console.log('Updating Firestore with:', finalUpdates);
         await updateDoc(doc(db, 'tasks', id), finalUpdates);
-        console.log('Firestore update successful');
         
         // If completing a recurring task, create the next instance
         if (isCompletingRecurring && currentTask && isTodoTask(currentTask)) {
